@@ -820,7 +820,7 @@
     }
   </style>
 </head>
-<body data-theme="light">
+<body data-theme="dark">
   <div class="app-shell">
     <aside class="sidebar">
       <div class="sidebar-inner">
@@ -922,7 +922,7 @@
                 <path d="M4 4h7v3H7v4H4V4Zm9 0h7v7h-3V7h-4V4ZM4 13h3v4h4v3H4v-7Zm13 0h3v7h-7v-3h4v-4Z" fill="currentColor"></path>
               </svg>
             </button>
-            <button id="themeToggle" class="header-button theme-toggle-button" type="button" aria-label="Enable dark mode" aria-pressed="false" title="Enable dark mode">☾</button>
+            <button id="themeToggle" class="header-button theme-toggle-button" type="button" aria-label="Enable light mode" aria-pressed="true" title="Enable light mode">☀</button>
           </div>
           <h2>Mealy over main-v3.py</h2>
           <p id="status"></p>
@@ -1133,7 +1133,7 @@ function bindGraphZoomControls() {
 function bindInterfaceControls() {
   updateRangeProgress(thresholdInput, thresholdOutput);
   bindGraphZoomControls();
-  applyTheme(localStorage.getItem("mealy-ui-theme") || "light");
+  applyTheme(localStorage.getItem("mealy-ui-theme") || "dark");
 
   document.getElementById("themeToggle")?.addEventListener("click", () => {
     applyTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
