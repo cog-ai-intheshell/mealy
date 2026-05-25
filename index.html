@@ -1,0 +1,2071 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mealy over main-v3.py</title>
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [["$", "$"], ["\\(", "\\)"]] },
+      svg: { fontCache: "global" },
+      options: { enableMenu: false }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --blue: #1677e8;
+      --blue-dark: #0f5fbd;
+      --green: #27AE60;
+      --red: #EB5757;
+      --orange: #e87511;
+      --primary: var(--blue);
+      --primary-dark: var(--blue-dark);
+      --ink: #111827;
+      --text: #111827;
+      --muted: #4b5563;
+      --line: #dfe5ee;
+      --subtle-line: #edf1f6;
+      --panel: #ffffff;
+      --page: #f6f8fb;
+      --sidebar: #fbfcfe;
+      --field-bg: #ffffff;
+      --field-border: #ccd6e1;
+      --control-bg: #ffffff;
+      --control-bg-hover: #f4f8ff;
+      --control-text: #0f5fbd;
+      --table-border: #dfe5ee;
+      --table-border-soft: #edf1f6;
+      --table-hover: #f8fafc;
+      --scene-bg: #ffffff;
+      --canvas-bg: #ffffff;
+      --canvas-grid: #d8dee8;
+      --canvas-axis: #8b96a8;
+      --primary-button-text: #ffffff;
+      --primary-gradient: linear-gradient(180deg, #1a83f5 0%, #0f72df 100%);
+      --primary-gradient-hover: linear-gradient(180deg, #2490ff 0%, #1069ce 100%);
+      --card-shadow: 0 3px 16px rgba(17, 24, 39, 0.04);
+      --radius-control: 6px;
+      --radius-field: 7px;
+      --radius-card: 8px;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --bottom-height: clamp(220px, 28vh, 320px);
+    }
+
+    body[data-theme="dark"] {
+      color-scheme: dark;
+      --bg1: #191919;
+      --bg2: #222222;
+      --primary: #5D71FC;
+      --blue: #5D71FC;
+      --blue-dark: #5D71FC;
+      --page: var(--bg1);
+      --panel: var(--bg2);
+      --sidebar: var(--bg2);
+      --scene-bg: var(--bg1);
+      --canvas-bg: var(--bg1);
+      --ink: #f8f8f8;
+      --text: #f8f8f8;
+      --muted: rgba(248, 248, 248, 0.62);
+      --line: transparent;
+      --subtle-line: transparent;
+      --field-border: transparent;
+      --field-bg: var(--bg1);
+      --control-bg: var(--bg1);
+      --control-bg-hover: var(--bg2);
+      --control-text: var(--primary);
+      --table-border: rgba(248, 248, 248, 0.08);
+      --table-border-soft: rgba(248, 248, 248, 0.055);
+      --table-hover: rgba(255, 255, 255, 0.025);
+      --primary-gradient: linear-gradient(180deg, var(--primary) 0%, var(--primary) 100%);
+      --primary-gradient-hover: linear-gradient(180deg, var(--primary) 0%, var(--primary) 100%);
+      --card-shadow: none;
+      --canvas-grid: rgba(248, 248, 248, 0.08);
+      --canvas-axis: rgba(248, 248, 248, 0.42);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      color: var(--text);
+      background: var(--page);
+    }
+
+    body,
+    button,
+    input,
+    table {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button,
+    input[type="range"],
+    input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: clamp(300px, 21vw, 380px) minmax(0, 1fr);
+      width: 100vw;
+      height: 100vh;
+      min-height: 620px;
+    }
+
+    .sidebar {
+      min-width: 0;
+      height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: var(--sidebar);
+      border-right: 1px solid var(--line);
+    }
+
+    .sidebar-inner {
+      padding: 18px 18px 22px;
+    }
+
+    .brand {
+      padding: 0 0 14px;
+    }
+
+    .brand h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      line-height: 1.15;
+      font-weight: 800;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.25;
+    }
+
+    .control-section,
+    .info-card {
+      padding: 15px 0 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .control-section h2,
+    .data-card h2 {
+      margin: 0 0 12px;
+      font-size: 14px;
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .primary-button,
+    .secondary-button {
+      width: 100%;
+      height: 36px;
+      border-radius: var(--radius-control);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .primary-button {
+      margin: 0 0 10px;
+      color: var(--primary-button-text);
+      background: var(--primary-gradient);
+      border: 0;
+    }
+
+    .primary-button:hover {
+      background: var(--primary-gradient-hover);
+    }
+
+    .secondary-button {
+      margin: 0 0 9px;
+      color: var(--control-text);
+      background: var(--control-bg);
+      border: 1px solid var(--field-border);
+    }
+
+    .secondary-button:hover,
+    .header-button:hover {
+      background: var(--control-bg-hover);
+      border-color: var(--primary);
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .button-row .secondary-button {
+      margin: 0;
+    }
+
+    .toggle-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 34px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .toggle-field input[type="checkbox"] {
+      appearance: none;
+      position: relative;
+      width: 34px;
+      height: 18px;
+      flex: 0 0 auto;
+      margin: 0;
+      border: 0;
+      border-radius: 999px;
+      background: #cfd8e3;
+      transition: background 0.18s ease;
+    }
+
+    .toggle-field input[type="checkbox"]::before {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: #ffffff;
+      transition: transform 0.18s ease;
+    }
+
+    .toggle-field input[type="checkbox"]:checked {
+      background: var(--primary);
+    }
+
+    .toggle-field input[type="checkbox"]:checked::before {
+      transform: translateX(16px);
+    }
+
+    .slider-field {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px 10px;
+      width: 100%;
+      margin-top: 15px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .slider-field output {
+      min-width: 42px;
+      color: var(--text);
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .slider-field input {
+      grid-column: 1 / -1;
+      width: 100%;
+      margin: 0;
+    }
+
+    input[type="range"] {
+      --range-progress: 50%;
+      --slider-fill: var(--primary);
+      --slider-track: var(--line);
+      appearance: none;
+      height: 22px;
+      background: transparent;
+      accent-color: var(--slider-fill);
+    }
+
+    body[data-theme="dark"] input[type="range"] {
+      --slider-track: #191919;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--slider-fill) 0%, var(--slider-fill) var(--range-progress), var(--slider-track) var(--range-progress), var(--slider-track) 100%);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      margin-top: -5px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--slider-fill);
+    }
+
+    input[type="range"]::-moz-range-track {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--slider-track);
+    }
+
+    input[type="range"]::-moz-range-progress {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--slider-fill);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--slider-fill);
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 8px 9px;
+      background: var(--field-bg);
+      border: 1px solid var(--field-border);
+      border-radius: var(--radius-card);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.1;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 4px;
+      color: var(--text);
+      font-size: 18px;
+      line-height: 1.1;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .legend-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .legend-item {
+      display: grid;
+      grid-template-columns: 12px minmax(0, 1fr);
+      gap: 8px;
+      align-items: center;
+      min-height: 22px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      background: var(--swatch);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) var(--bottom-height);
+      gap: 12px;
+      min-width: 0;
+      height: 100vh;
+      padding: 10px 12px 12px;
+      overflow: hidden;
+    }
+
+    .simulation-card,
+    .data-card {
+      min-width: 0;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-card);
+      box-shadow: var(--card-shadow);
+    }
+
+    .simulation-card {
+      display: grid;
+      grid-template-rows: 48px minmax(0, 1fr) 34px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .sim-header {
+      display: grid;
+      grid-template-columns: minmax(0, auto) minmax(160px, 1fr) max-content;
+      align-items: center;
+      column-gap: 14px;
+      height: 48px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .header-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 28px;
+      min-width: 30px;
+      padding: 0 10px;
+      color: var(--control-text);
+      background: var(--control-bg);
+      border: 1px solid var(--field-border);
+      border-radius: var(--radius-control);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .header-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .header-button.is-active {
+      color: #ffffff;
+      border-color: var(--primary);
+      background: var(--primary);
+    }
+
+    .theme-toggle-button,
+    .icon-button {
+      width: 30px;
+      padding: 0;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .icon-button {
+      font-size: 16px;
+    }
+
+    .zoom-readout {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 28px;
+      color: var(--muted);
+      border: 1px solid var(--field-border);
+      border-radius: var(--radius-control);
+      background: var(--field-bg);
+      font-size: 12px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .sim-header h2 {
+      justify-self: center;
+      margin: 0;
+      font-size: 17px;
+      line-height: 1;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sim-header p {
+      justify-self: end;
+      margin: 0;
+      max-width: 520px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1;
+      font-weight: 650;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .scene-frame {
+      position: relative;
+      min-height: 0;
+      overflow: auto;
+      background-color: var(--scene-bg);
+      background-image:
+        linear-gradient(var(--canvas-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
+      background-size: 48px 48px;
+      overscroll-behavior: contain;
+    }
+
+    svg {
+      display: block;
+      background: transparent;
+    }
+
+    .legend-strip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      padding: 0 12px;
+      border-top: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .legend-token {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: var(--dot);
+    }
+
+    .bottom-grid {
+      display: grid;
+      grid-template-columns: minmax(320px, 1fr) minmax(0, 1.35fr);
+      gap: 12px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .data-card {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .data-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 42px;
+      padding: 12px 12px 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .data-card h2 {
+      margin: 0;
+    }
+
+    .data-body {
+      min-height: 0;
+      overflow: auto;
+      padding: 11px 12px;
+    }
+
+    .status-readout {
+      margin: 0;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--table-border-soft);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    tr:hover td {
+      background: var(--table-hover);
+    }
+
+    .edge-path {
+      fill: none;
+      pointer-events: none;
+    }
+
+    .edge-label {
+      font-family: serif, serif;
+      font-size: 11px;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      pointer-events: none;
+      paint-order: stroke;
+      stroke: var(--canvas-bg);
+      stroke-width: 5px;
+      stroke-linejoin: round;
+    }
+
+    .node {
+      cursor: grab;
+      user-select: none;
+    }
+
+    .node.dragging {
+      cursor: grabbing;
+    }
+
+    .node-label {
+      fill: #111827;
+      font-family: serif, serif;
+      font-size: 18px;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    .math-label-foreign {
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .math-label-box {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #111827;
+      font-family: serif, serif;
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    .math-label-box mjx-container {
+      margin: 0 !important;
+    }
+
+    .math-label-box svg {
+      display: inline !important;
+      background: transparent !important;
+    }
+
+    .node-note {
+      fill: #6B7280;
+      font-family: serif, serif;
+      font-size: 10px;
+      font-style: italic;
+      dominant-baseline: hanging;
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    .mealy-token circle {
+      fill: #111827;
+      stroke: #FFFFFF;
+      stroke-width: 2.2px;
+    }
+
+    .mealy-token.dataset circle { fill: #C2410C; }
+    .mealy-token.prep circle { fill: #047857; }
+    .mealy-token.cpd circle,
+    .mealy-token.vsn circle,
+    .mealy-token.encoder circle,
+    .mealy-token.timefm circle,
+    .mealy-token.multitimefm circle { fill: #4338CA; }
+    .mealy-token.world circle { fill: #7C3AED; }
+    .mealy-token.regime_memory circle,
+    .mealy-token.cluster_pi circle,
+    .mealy-token.similarity_regime circle,
+    .mealy-token.similarity_output circle { fill: #0F766E; }
+    .mealy-token.decision_score circle { fill: #92400E; }
+    .mealy-token.xgb_alpha circle,
+    .mealy-token.xgb_fm circle,
+    .mealy-token.xgb_mfm circle,
+    .mealy-token.xgb_cpd circle,
+    .mealy-token.xgb_vsn circle,
+    .mealy-token.xgb_enc circle,
+    .mealy-token.xgb_sim circle,
+    .mealy-token.xgb_cluster circle { fill: #111827; }
+    .mealy-token.xgb_decision circle { fill: #92400E; }
+    .mealy-token.homeo circle { fill: #991B1B; }
+
+    .mealy-token text {
+      fill: #111827;
+      font: 700 10px system-ui, sans-serif;
+      dominant-baseline: central;
+      paint-order: stroke;
+      stroke: #FFFFFF;
+      stroke-width: 3px;
+    }
+
+    .edge-path.mealy-active {
+      stroke-width: 4px;
+      filter: drop-shadow(0 0 5px rgba(17, 24, 39, 0.28));
+    }
+
+    .node.mealy-learned > circle,
+    .node.mealy-learned > rect,
+    .node.mealy-learned > path {
+      fill: #111827 !important;
+      stroke: #111827 !important;
+    }
+
+    .node.mealy-learned .math-label-box {
+      color: #FFFFFF !important;
+    }
+
+    .node.mealy-learned .node-note {
+      fill: #111827;
+      font-weight: 700;
+    }
+
+    body.is-fullscreen-graph {
+      overflow: hidden;
+    }
+
+    body.is-fullscreen-graph .app-shell {
+      grid-template-columns: 1fr;
+      height: 100vh;
+      min-height: 0;
+    }
+
+    body.is-fullscreen-graph .sidebar,
+    body.is-fullscreen-graph .bottom-grid {
+      display: none;
+    }
+
+    body.is-fullscreen-graph .workspace {
+      grid-template-rows: minmax(0, 1fr);
+      gap: 0;
+      width: 100vw;
+      height: 100vh;
+      padding: 0;
+    }
+
+    body.is-fullscreen-graph .simulation-card {
+      width: 100vw;
+      height: 100vh;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
+
+    body.is-fullscreen-graph .sim-header {
+      background: var(--panel);
+    }
+
+    body.is-fullscreen-graph .sim-header p::after {
+      content: " · q pour quitter";
+    }
+
+    @media (max-width: 960px) {
+      html,
+      body {
+        overflow: auto;
+      }
+
+      .app-shell {
+        grid-template-columns: 1fr;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .workspace {
+        height: auto;
+        min-height: 780px;
+        grid-template-rows: minmax(560px, 68vh) auto;
+      }
+
+      .bottom-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-inner">
+        <div class="brand">
+          <h1>Mealy Machine</h1>
+          <p>main-v3 cognitive graph</p>
+        </div>
+
+        <section class="control-section">
+          <h2>Simulation</h2>
+          <button id="mealy-toggle" class="primary-button" type="button">Start tokens</button>
+          <div class="button-row">
+            <button id="mealy-step" class="secondary-button" type="button">Step token</button>
+            <button id="mealy-stress" class="secondary-button" type="button">H +</button>
+          </div>
+          <button id="mealy-reset" class="secondary-button" type="button">Reset tokens</button>
+          <label class="slider-field" for="mealy-threshold" title="Nombre d'observations necessaires avant le mode live">
+            <span>N_ready</span>
+            <output id="thresholdOutput">36</output>
+            <input id="mealy-threshold" type="range" min="8" max="120" value="36" step="1">
+          </label>
+        </section>
+
+        <section class="control-section">
+          <h2>Registres</h2>
+          <label class="toggle-field" title="Afficher ou masquer le registre homéostasie">
+            <span>Homeostasie</span>
+            <input id="toggle-homeostasie" type="checkbox" checked>
+          </label>
+          <label class="toggle-field" title="Afficher ou masquer le registre critique">
+            <span>Critic</span>
+            <input id="toggle-critic" type="checkbox" checked>
+          </label>
+        </section>
+
+        <section class="control-section">
+          <h2>Layout</h2>
+          <button id="reset" class="secondary-button" type="button">Reset positions</button>
+          <button id="copy" class="secondary-button" type="button">Copy positions</button>
+        </section>
+
+        <section class="control-section">
+          <h2>Métriques</h2>
+          <div class="metric-grid">
+            <div class="metric">
+              <span>Mode</span>
+              <strong id="modeMetric">learn</strong>
+            </div>
+            <div class="metric">
+              <span>Ready</span>
+              <strong id="readyMetric">0/36</strong>
+            </div>
+            <div class="metric">
+              <span>H</span>
+              <strong id="homeostasisMetric">0.18</strong>
+            </div>
+            <div class="metric">
+              <span>Updates</span>
+              <strong id="updatesMetric">0</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="control-section">
+          <h2>Tokens</h2>
+          <div class="legend-list">
+            <div class="legend-item"><span class="swatch" style="--swatch:#C2410C"></span><span>Dataset</span></div>
+            <div class="legend-item"><span class="swatch" style="--swatch:#047857"></span><span>Preparation</span></div>
+            <div class="legend-item"><span class="swatch" style="--swatch:#4338CA"></span><span>Cognition</span></div>
+            <div class="legend-item"><span class="swatch" style="--swatch:#0F766E"></span><span>Regime memory</span></div>
+            <div class="legend-item"><span class="swatch" style="--swatch:#991B1B"></span><span>Homeostasis</span></div>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <section class="simulation-card">
+        <header class="sim-header">
+          <div class="header-actions">
+            <button id="zoomOutGraph" class="header-button icon-button" type="button" aria-label="Zoom out graph" title="Zoom out graph">
+              <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10.5 4a6.5 6.5 0 1 0 4.02 11.6l4.44 4.44 1.41-1.41-4.44-4.44A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9ZM8 9.5h5v2H8v-2Z" fill="currentColor"></path>
+              </svg>
+            </button>
+            <output id="zoomLevel" class="zoom-readout" aria-live="polite">100%</output>
+            <button id="zoomInGraph" class="header-button icon-button" type="button" aria-label="Zoom in graph" title="Zoom in graph">
+              <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10.5 4a6.5 6.5 0 1 0 4.02 11.6l4.44 4.44 1.41-1.41-4.44-4.44A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9Zm-1 2.5h2v2h2v2h-2v2h-2v-2h-2v-2h2v-2Z" fill="currentColor"></path>
+              </svg>
+            </button>
+            <button id="zoomResetGraph" class="header-button icon-button" type="button" aria-label="Reset graph zoom" title="Reset graph zoom">
+              <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5V2L7 7l5 5V9c3.31 0 6 2.69 6 6a6 6 0 0 1-10.24 4.24l-1.42 1.42A8 8 0 0 0 20 15c0-4.42-3.58-8-8-8Z" fill="currentColor"></path>
+              </svg>
+            </button>
+            <button id="fullscreenGraph" class="header-button icon-button" type="button" aria-label="Enter graph fullscreen" aria-pressed="false" title="Graph fullscreen">
+              <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 4h7v3H7v4H4V4Zm9 0h7v7h-3V7h-4V4ZM4 13h3v4h4v3H4v-7Zm13 0h3v7h-7v-3h4v-4Z" fill="currentColor"></path>
+              </svg>
+            </button>
+            <button id="themeToggle" class="header-button theme-toggle-button" type="button" aria-label="Enable dark mode" aria-pressed="false" title="Enable dark mode">☾</button>
+          </div>
+          <h2>Mealy over main-v3.py</h2>
+          <p id="status"></p>
+        </header>
+
+        <div id="viewport" class="scene-frame">
+          <svg id="graph"></svg>
+        </div>
+
+        <div class="legend-strip">
+          <span class="legend-token"><span class="legend-dot" style="--dot:#C2410C"></span>Dataset</span>
+          <span class="legend-token"><span class="legend-dot" style="--dot:#047857"></span>Prep</span>
+          <span class="legend-token"><span class="legend-dot" style="--dot:#4338CA"></span>Cognition</span>
+          <span class="legend-token"><span class="legend-dot" style="--dot:#0F766E"></span>Regime</span>
+          <span class="legend-token"><span class="legend-dot" style="--dot:#991B1B"></span>Homeostasis</span>
+        </div>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="data-card">
+          <div class="data-card-header">
+            <h2>Mealy status</h2>
+          </div>
+          <div class="data-body">
+            <pre id="mealy-status" class="status-readout">n=0/36 | learn | H=0.18</pre>
+          </div>
+        </article>
+
+        <article class="data-card">
+          <div class="data-card-header">
+            <h2>Route contract</h2>
+          </div>
+          <div class="data-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Phase</th>
+                  <th>Signal</th>
+                  <th>Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Learn</td><td>dataset + prep</td><td>Build context until N_ready</td></tr>
+                <tr><td>Live</td><td>alpha_X/Y ctx</td><td>Fork into cognitive routes</td></tr>
+                <tr><td>Barrier</td><td>XGB</td><td>Wait for required inputs</td></tr>
+                <tr><td>Homeo</td><td>H threshold</td><td>Trigger corrective update</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+  <script id="graph-data" type="application/json">{"nodes": {"eta_strategy": {"name": "eta_strategy", "label": "$\\eta'_A$", "labelMeasure": "\\eta'_A", "labelMath": "$\\eta'_A$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "f_dataset": {"name": "f_dataset", "label": "$f_{\\eta'_A}$", "labelMeasure": "f_{\\eta'_A}", "labelMath": "$f_{\\eta'_A}$", "blockStyle": "function", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "DatasetCreation": {"name": "DatasetCreation", "label": "$\\mathrm{Dataset\\ creation}_{R}$", "labelMeasure": "\\mathrm{Dataset\\ creation}_{R}", "labelMath": "$\\mathrm{Dataset\\ creation}_{R}$", "blockStyle": "rectangle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "gamma_dataset": {"name": "gamma_dataset", "label": "$\\gamma_A$", "labelMeasure": "\\gamma_A", "labelMath": "$\\gamma_A$", "blockStyle": "circle", "register": "action", "face": "#FFF7ED", "edge": "#C2410C"}, "M_dataset_prior": {"name": "M_dataset_prior", "label": "$M_Y^{t}$", "labelMeasure": "M_Y^{t}", "labelMath": "$M_Y^{t}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "Append_M_y": {"name": "Append_M_y", "label": "$append_{M_Y}$", "labelMeasure": "append_{M_Y}", "labelMath": "$append_{M_Y}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "M_dataset": {"name": "M_dataset", "label": "$M_Y^{t+1}$", "labelMeasure": "M_Y^{t+1}", "labelMath": "$M_Y^{t+1}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "Read_M_y": {"name": "Read_M_y", "label": "$read_{M_Y}$", "labelMeasure": "read_{M_Y}", "labelMath": "$read_{M_Y}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "eta_bar_dataset": {"name": "eta_bar_dataset", "label": "$\\bar{\\eta}_{Y,X}^{sup}$", "labelMeasure": "\\bar{\\eta}_{Y,X}^{sup}", "labelMath": "$\\bar{\\eta}_{Y,X}^{sup}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "Per_Dataset": {"name": "Per_Dataset", "label": "$Per_{Y,X}^{sup}$", "labelMeasure": "Per_{Y,X}^{sup}", "labelMath": "$Per_{Y,X}^{sup}$", "blockStyle": "rectangle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "alpha_dataset": {"name": "alpha_dataset", "label": "$\\alpha_{Y,X}^{sup}$", "labelMeasure": "\\alpha_{Y,X}^{sup}", "labelMath": "$\\alpha_{Y,X}^{sup}$", "blockStyle": "circle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "eta_market": {"name": "eta_market", "label": "$\\eta$", "labelMeasure": "\\eta", "labelMath": "$\\eta$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "DataGathering": {"name": "DataGathering", "label": "$\\mathrm{Data\\ gathering}$", "labelMeasure": "\\mathrm{Data\\ gathering}", "labelMath": "$\\mathrm{Data\\ gathering}$", "blockStyle": "rectangle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "alpha_X": {"name": "alpha_X", "label": "$\\alpha_X$", "labelMeasure": "\\alpha_X", "labelMath": "$\\alpha_X$", "blockStyle": "circle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "f_preprocess": {"name": "f_preprocess", "label": "$f_{prep}$", "labelMeasure": "f_{prep}", "labelMath": "$f_{prep}$", "blockStyle": "function", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "Preprocess_Cog": {"name": "Preprocess_Cog", "label": "$\\mathrm{Data\\ preprocessing}_{R}$", "labelMeasure": "\\mathrm{Data\\ preprocessing}_{R}", "labelMath": "$\\mathrm{Data\\ preprocessing}_{R}$", "blockStyle": "rectangle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "gamma_preprocess": {"name": "gamma_preprocess", "label": "$\\gamma_{prep}$", "labelMeasure": "\\gamma_{prep}", "labelMath": "$\\gamma_{prep}$", "blockStyle": "circle", "register": "action", "face": "#FFF7ED", "edge": "#C2410C"}, "M_preprocess_prior": {"name": "M_preprocess_prior", "label": "$M_{prep}^{t}$", "labelMeasure": "M_{prep}^{t}", "labelMath": "$M_{prep}^{t}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "Append_M_preprocess": {"name": "Append_M_preprocess", "label": "$append_{M_{prep}}$", "labelMeasure": "append_{M_{prep}}", "labelMath": "$append_{M_{prep}}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "M_preprocess": {"name": "M_preprocess", "label": "$M_{prep}^{t+1}$", "labelMeasure": "M_{prep}^{t+1}", "labelMath": "$M_{prep}^{t+1}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "Read_M_preprocess": {"name": "Read_M_preprocess", "label": "$read_{M_{prep}}$", "labelMeasure": "read_{M_{prep}}", "labelMath": "$read_{M_{prep}}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "eta_bar_preprocess": {"name": "eta_bar_preprocess", "label": "$\\bar{\\eta}_{prep}$", "labelMeasure": "\\bar{\\eta}_{prep}", "labelMath": "$\\bar{\\eta}_{prep}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "Per_Preprocess": {"name": "Per_Preprocess", "label": "$Per_{prep}$", "labelMeasure": "Per_{prep}", "labelMath": "$Per_{prep}$", "blockStyle": "rectangle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "alpha_prepared": {"name": "alpha_prepared", "label": "$\\alpha_X^{prep}$", "labelMeasure": "\\alpha_X^{prep}", "labelMath": "$\\alpha_X^{prep}$", "blockStyle": "circle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "f_norm": {"name": "f_norm", "label": "$f_{norm}$", "labelMeasure": "f_{norm}", "labelMath": "$f_{norm}$", "blockStyle": "function", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "Norm_Cog": {"name": "Norm_Cog", "label": "$\\mathrm{Normalization}_{R}$", "labelMeasure": "\\mathrm{Normalization}_{R}", "labelMath": "$\\mathrm{Normalization}_{R}$", "blockStyle": "rectangle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "gamma_norm": {"name": "gamma_norm", "label": "$\\gamma_{norm}$", "labelMeasure": "\\gamma_{norm}", "labelMath": "$\\gamma_{norm}$", "blockStyle": "circle", "register": "action", "face": "#FFF7ED", "edge": "#C2410C"}, "M_norm_prior": {"name": "M_norm_prior", "label": "$M_{norm}^{t}$", "labelMeasure": "M_{norm}^{t}", "labelMath": "$M_{norm}^{t}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "Append_M_norm": {"name": "Append_M_norm", "label": "$append_{M_{norm}}$", "labelMeasure": "append_{M_{norm}}", "labelMath": "$append_{M_{norm}}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "M_norm": {"name": "M_norm", "label": "$M_{norm}^{t+1}$", "labelMeasure": "M_{norm}^{t+1}", "labelMath": "$M_{norm}^{t+1}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "Read_M_norm": {"name": "Read_M_norm", "label": "$read_{M_{norm}}$", "labelMeasure": "read_{M_{norm}}", "labelMath": "$read_{M_{norm}}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "eta_bar_norm": {"name": "eta_bar_norm", "label": "$\\bar{\\eta}_{norm}$", "labelMeasure": "\\bar{\\eta}_{norm}", "labelMath": "$\\bar{\\eta}_{norm}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "Per_Norm": {"name": "Per_Norm", "label": "$Per_{norm}$", "labelMeasure": "Per_{norm}", "labelMath": "$Per_{norm}$", "blockStyle": "rectangle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "alpha_X_context": {"name": "alpha_X_context", "label": "$\\alpha_X^{ctx}$", "labelMeasure": "\\alpha_X^{ctx}", "labelMath": "$\\alpha_X^{ctx}$", "blockStyle": "circle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "alpha_Y_context": {"name": "alpha_Y_context", "label": "$\\alpha_Y^{ctx}$", "labelMeasure": "\\alpha_Y^{ctx}", "labelMath": "$\\alpha_Y^{ctx}$", "blockStyle": "circle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "CPD": {"name": "CPD", "label": "$\\mathrm{CPD}_{Cog}$", "labelMeasure": "\\mathrm{CPD}_{Cog}", "labelMath": "$\\mathrm{CPD}_{Cog}$", "blockStyle": "rectangle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "beta_CPD": {"name": "beta_CPD", "label": "$\\beta_{CPD}$", "labelMeasure": "\\beta_{CPD}", "labelMath": "$\\beta_{CPD}$", "blockStyle": "circle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "VSN": {"name": "VSN", "label": "$\\mathrm{VSN}_{Cog}$", "labelMeasure": "\\mathrm{VSN}_{Cog}", "labelMath": "$\\mathrm{VSN}_{Cog}$", "blockStyle": "rectangle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "beta_VSN": {"name": "beta_VSN", "label": "$\\beta_{VSN}$", "labelMeasure": "\\beta_{VSN}", "labelMath": "$\\beta_{VSN}$", "blockStyle": "circle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "Enc_Cog": {"name": "Enc_Cog", "label": "$Enc_{Cog}$", "labelMeasure": "Enc_{Cog}", "labelMath": "$Enc_{Cog}$", "blockStyle": "factor", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "beta_enc": {"name": "beta_enc", "label": "$\\beta_{Enc}$", "labelMeasure": "\\beta_{Enc}", "labelMath": "$\\beta_{Enc}$", "blockStyle": "circle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "Dec_Gen": {"name": "Dec_Gen", "label": "$Dec_{Gen}$", "labelMeasure": "Dec_{Gen}", "labelMath": "$Dec_{Gen}$", "blockStyle": "factor", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "S_dec": {"name": "S_dec", "label": "$S_{Dec}$", "labelMeasure": "S_{Dec}", "labelMath": "$S_{Dec}$", "blockStyle": "circle", "register": "state", "face": "#F8FAFC", "edge": "#475569"}, "eta_dec": {"name": "eta_dec", "label": "$\\eta'_s{}_{t+1:t+W_p}$", "labelMeasure": "\\eta'_s{}_{t+1:t+W_p}", "labelMath": "$\\eta'_s{}_{t+1:t+W_p}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "Dec_Gen_Sim": {"name": "Dec_Gen_Sim", "label": "$Dec_{Gen}^{sim}$", "labelMeasure": "Dec_{Gen}^{sim}", "labelMath": "$Dec_{Gen}^{sim}$", "blockStyle": "factor", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "S_dec_sim": {"name": "S_dec_sim", "label": "$S_{Dec}^{sim}$", "labelMeasure": "S_{Dec}^{sim}", "labelMath": "$S_{Dec}^{sim}$", "blockStyle": "circle", "register": "state", "face": "#F8FAFC", "edge": "#475569"}, "eta_dec_sim": {"name": "eta_dec_sim", "label": "$\\eta'_{s,sim}{}_{t+1:t+W_p}$", "labelMeasure": "\\eta'_{s,sim}{}_{t+1:t+W_p}", "labelMath": "$\\eta'_{s,sim}{}_{t+1:t+W_p}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "TimeFM": {"name": "TimeFM", "label": "$TimeFM_{Cog}$", "labelMeasure": "TimeFM_{Cog}", "labelMath": "$TimeFM_{Cog}$", "blockStyle": "rectangle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "beta_FM": {"name": "beta_FM", "label": "$\\beta_{FM}$", "labelMeasure": "\\beta_{FM}", "labelMath": "$\\beta_{FM}$", "blockStyle": "circle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "MultiTimeFM": {"name": "MultiTimeFM", "label": "$\\mathrm{MultiTimeFM}_{Cog}$", "labelMeasure": "\\mathrm{MultiTimeFM}_{Cog}", "labelMath": "$\\mathrm{MultiTimeFM}_{Cog}$", "blockStyle": "rectangle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "beta_MFM": {"name": "beta_MFM", "label": "$\\beta_{MFM}$", "labelMeasure": "\\beta_{MFM}", "labelMath": "$\\beta_{MFM}$", "blockStyle": "circle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "RegimeEncoder": {"name": "RegimeEncoder", "label": "$\\mathrm{RegimeEncoder}_{Cog}$", "labelMeasure": "\\mathrm{RegimeEncoder}_{Cog}", "labelMath": "$\\mathrm{RegimeEncoder}_{Cog}$", "blockStyle": "factor", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "beta_regime": {"name": "beta_regime", "label": "$\\beta_{Reg}$", "labelMeasure": "\\beta_{Reg}", "labelMath": "$\\beta_{Reg}$", "blockStyle": "circle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "Gen_Regime": {"name": "Gen_Regime", "label": "$Gen_{Reg}$", "labelMeasure": "Gen_{Reg}", "labelMath": "$Gen_{Reg}$", "blockStyle": "rectangle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "S_regime": {"name": "S_regime", "label": "$S_{Reg}$", "labelMeasure": "S_{Reg}", "labelMath": "$S_{Reg}$", "blockStyle": "circle", "register": "state", "face": "#F8FAFC", "edge": "#475569"}, "eta_regime": {"name": "eta_regime", "label": "$\\eta'_{Reg}$", "labelMeasure": "\\eta'_{Reg}", "labelMath": "$\\eta'_{Reg}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "Union_STM": {"name": "Union_STM", "label": "$\\sqcup_{Reg,STM}$", "labelMeasure": "\\sqcup_{Reg,STM}", "labelMath": "$\\sqcup_{Reg,STM}$", "blockStyle": "rectangle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "eta_bar_regime": {"name": "eta_bar_regime", "label": "$\\bar{\\eta}_{Reg,STM}$", "labelMeasure": "\\bar{\\eta}_{Reg,STM}", "labelMath": "$\\bar{\\eta}_{Reg,STM}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "M_reg_STM": {"name": "M_reg_STM", "label": "$M_{Reg,STM}^{t}$", "labelMeasure": "M_{Reg,STM}^{t}", "labelMath": "$M_{Reg,STM}^{t}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "STM_append": {"name": "STM_append", "label": "$append_{Reg,STM}$", "labelMeasure": "append_{Reg,STM}", "labelMath": "$append_{Reg,STM}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "M_reg_STM_filled": {"name": "M_reg_STM_filled", "label": "$M_{Reg,STM}^{t+1}$", "labelMeasure": "M_{Reg,STM}^{t+1}", "labelMath": "$M_{Reg,STM}^{t+1}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "STM_read": {"name": "STM_read", "label": "$read_{Reg,STM}$", "labelMeasure": "read_{Reg,STM}", "labelMath": "$read_{Reg,STM}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "eta_bar_STM": {"name": "eta_bar_STM", "label": "$\\bar{\\eta}_{Reg,STM}^{read}$", "labelMeasure": "\\bar{\\eta}_{Reg,STM}^{read}", "labelMath": "$\\bar{\\eta}_{Reg,STM}^{read}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "Per_STM": {"name": "Per_STM", "label": "$Per_{Reg,STM}$", "labelMeasure": "Per_{Reg,STM}", "labelMath": "$Per_{Reg,STM}$", "blockStyle": "rectangle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "alpha_STM": {"name": "alpha_STM", "label": "$\\alpha_{Reg,STM}$", "labelMeasure": "\\alpha_{Reg,STM}", "labelMath": "$\\alpha_{Reg,STM}$", "blockStyle": "circle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "M_reg_LTM": {"name": "M_reg_LTM", "label": "$M_{Reg,LTM}^{t}$", "labelMeasure": "M_{Reg,LTM}^{t}", "labelMath": "$M_{Reg,LTM}^{t}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "LTM_append": {"name": "LTM_append", "label": "$append_{Reg,LTM}$", "labelMeasure": "append_{Reg,LTM}", "labelMath": "$append_{Reg,LTM}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "M_reg_LTM_filled": {"name": "M_reg_LTM_filled", "label": "$M_{Reg,LTM}^{t+1}$", "labelMeasure": "M_{Reg,LTM}^{t+1}", "labelMath": "$M_{Reg,LTM}^{t+1}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "LTM_read": {"name": "LTM_read", "label": "$read_{Reg,LTM}$", "labelMeasure": "read_{Reg,LTM}", "labelMath": "$read_{Reg,LTM}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "eta_bar_LTM": {"name": "eta_bar_LTM", "label": "$\\bar{\\eta}_{Reg,LTM}^{read}$", "labelMeasure": "\\bar{\\eta}_{Reg,LTM}^{read}", "labelMath": "$\\bar{\\eta}_{Reg,LTM}^{read}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "Per_LTM": {"name": "Per_LTM", "label": "$Per_{Reg,LTM}$", "labelMeasure": "Per_{Reg,LTM}", "labelMath": "$Per_{Reg,LTM}$", "blockStyle": "rectangle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "alpha_LTM": {"name": "alpha_LTM", "label": "$\\alpha_{Reg,LTM}$", "labelMeasure": "\\alpha_{Reg,LTM}", "labelMath": "$\\alpha_{Reg,LTM}$", "blockStyle": "circle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "Clustering_Pi": {"name": "Clustering_Pi", "label": "$\\mathrm{Clustering}_{\\Pi}$", "labelMeasure": "\\mathrm{Clustering}_{\\Pi}", "labelMath": "$\\mathrm{Clustering}_{\\Pi}$", "blockStyle": "factor", "register": "automatisme", "face": "#EFF6FF", "edge": "#1D4ED8"}, "beta_cluster": {"name": "beta_cluster", "label": "$\\beta_{cluster}$", "labelMeasure": "\\beta_{cluster}", "labelMath": "$\\beta_{cluster}$", "blockStyle": "circle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "Gen_Cluster": {"name": "Gen_Cluster", "label": "$Gen_{cluster}$", "labelMeasure": "Gen_{cluster}", "labelMath": "$Gen_{cluster}$", "blockStyle": "rectangle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "S_cluster": {"name": "S_cluster", "label": "$S_{cluster}$", "labelMeasure": "S_{cluster}", "labelMath": "$S_{cluster}$", "blockStyle": "circle", "register": "state", "face": "#F8FAFC", "edge": "#475569"}, "eta_cluster": {"name": "eta_cluster", "label": "$\\eta'_{cluster}$", "labelMeasure": "\\eta'_{cluster}", "labelMath": "$\\eta'_{cluster}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "Union_Learned": {"name": "Union_Learned", "label": "$\\sqcup_{Reg,learned}$", "labelMeasure": "\\sqcup_{Reg,learned}", "labelMath": "$\\sqcup_{Reg,learned}$", "blockStyle": "rectangle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "eta_bar_learned": {"name": "eta_bar_learned", "label": "$\\bar{\\eta}_{Reg,learned}$", "labelMeasure": "\\bar{\\eta}_{Reg,learned}", "labelMath": "$\\bar{\\eta}_{Reg,learned}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "M_reg_learned": {"name": "M_reg_learned", "label": "$M_{Reg,learned}^{t}$", "labelMeasure": "M_{Reg,learned}^{t}", "labelMath": "$M_{Reg,learned}^{t}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "Learned_append": {"name": "Learned_append", "label": "$append_{Reg,learned}$", "labelMeasure": "append_{Reg,learned}", "labelMath": "$append_{Reg,learned}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "M_reg_learned_filled": {"name": "M_reg_learned_filled", "label": "$M_{Reg,learned}^{t+1}$", "labelMeasure": "M_{Reg,learned}^{t+1}", "labelMath": "$M_{Reg,learned}^{t+1}$", "blockStyle": "circle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "Learned_read": {"name": "Learned_read", "label": "$read_{Reg,learned}$", "labelMeasure": "read_{Reg,learned}", "labelMath": "$read_{Reg,learned}$", "blockStyle": "rectangle", "register": "memory", "face": "#F0FDFA", "edge": "#0F766E"}, "eta_bar_learned_memory": {"name": "eta_bar_learned_memory", "label": "$\\bar{\\eta}_{Reg,learned}^{read}$", "labelMeasure": "\\bar{\\eta}_{Reg,learned}^{read}", "labelMath": "$\\bar{\\eta}_{Reg,learned}^{read}$", "blockStyle": "circle", "register": "phenomenal", "face": "#EEF2FF", "edge": "#4338CA"}, "Per_Learned": {"name": "Per_Learned", "label": "$Per_{Reg,learned}$", "labelMeasure": "Per_{Reg,learned}", "labelMath": "$Per_{Reg,learned}$", "blockStyle": "rectangle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "alpha_learned": {"name": "alpha_learned", "label": "$\\alpha_{Reg,learned}$", "labelMeasure": "\\alpha_{Reg,learned}", "labelMath": "$\\alpha_{Reg,learned}$", "blockStyle": "circle", "register": "perception", "face": "#ECFDF5", "edge": "#047857"}, "Similarity_R": {"name": "Similarity_R", "label": "$\\mathrm{Similarity}_{R}$", "labelMeasure": "\\mathrm{Similarity}_{R}", "labelMath": "$\\mathrm{Similarity}_{R}$", "blockStyle": "rectangle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "gamma_cluster": {"name": "gamma_cluster", "label": "$\\gamma_{cluster}$", "labelMeasure": "\\gamma_{cluster}", "labelMath": "$\\gamma_{cluster}$", "blockStyle": "circle", "register": "action", "face": "#FFF7ED", "edge": "#C2410C"}, "Memory_Cog": {"name": "Memory_Cog", "label": "$Memory_{Cog}$", "labelMeasure": "Memory_{Cog}", "labelMath": "$Memory_{Cog}$", "blockStyle": "factor", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "beta_memory": {"name": "beta_memory", "label": "$\\beta_{memory}$", "labelMeasure": "\\beta_{memory}", "labelMath": "$\\beta_{memory}$", "blockStyle": "circle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "CrossAttention": {"name": "CrossAttention", "label": "$\\mathrm{CrossAttention}_{Cog}$", "labelMeasure": "\\mathrm{CrossAttention}_{Cog}", "labelMath": "$\\mathrm{CrossAttention}_{Cog}$", "blockStyle": "rectangle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "beta_sim": {"name": "beta_sim", "label": "$\\beta_{sim}$", "labelMeasure": "\\beta_{sim}", "labelMath": "$\\beta_{sim}$", "blockStyle": "circle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "XGB": {"name": "XGB", "label": "$XGB_{\\Pi}$", "labelMeasure": "XGB_{\\Pi}", "labelMath": "$XGB_{\\Pi}$", "blockStyle": "factor", "register": "automatisme", "face": "#EFF6FF", "edge": "#1D4ED8"}, "beta_proba": {"name": "beta_proba", "label": "$\\beta_{proba}$", "labelMeasure": "\\beta_{proba}", "labelMath": "$\\beta_{proba}$", "blockStyle": "circle", "register": "cognition", "face": "#F5F3FF", "edge": "#7C3AED"}, "f_threshold": {"name": "f_threshold", "label": "$f_{\\tau}$", "labelMeasure": "f_{\\tau}", "labelMath": "$f_{\\tau}$", "blockStyle": "function", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "Threshold": {"name": "Threshold", "label": "$\\mathrm{Threshold}_{R}$", "labelMeasure": "\\mathrm{Threshold}_{R}", "labelMath": "$\\mathrm{Threshold}_{R}$", "blockStyle": "rectangle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "y_pred": {"name": "y_pred", "label": "$y_{pred}$", "labelMeasure": "y_{pred}", "labelMath": "$y_{pred}$", "blockStyle": "circle", "register": "action", "face": "#FFF7ED", "edge": "#C2410C"}, "f_threshold_cluster": {"name": "f_threshold_cluster", "label": "$f_{\\tau_c}$", "labelMeasure": "f_{\\tau_c}", "labelMath": "$f_{\\tau_c}$", "blockStyle": "function", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "ThresholdClustering": {"name": "ThresholdClustering", "label": "$\\mathrm{ThresholdClustering}_{R}$", "labelMeasure": "\\mathrm{ThresholdClustering}_{R}", "labelMath": "$\\mathrm{ThresholdClustering}_{R}$", "blockStyle": "rectangle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "y_pred_cluster": {"name": "y_pred_cluster", "label": "$y_{pred}^{cluster}$", "labelMeasure": "y_{pred}^{cluster}", "labelMath": "$y_{pred}^{cluster}$", "blockStyle": "circle", "register": "action", "face": "#FFF7ED", "edge": "#C2410C"}, "f_threshold_brute": {"name": "f_threshold_brute", "label": "$f_{\\tau_b}$", "labelMeasure": "f_{\\tau_b}", "labelMath": "$f_{\\tau_b}$", "blockStyle": "function", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "ThresholdBruteforce": {"name": "ThresholdBruteforce", "label": "$\\mathrm{ThresholdBruteforce}_{R}$", "labelMeasure": "\\mathrm{ThresholdBruteforce}_{R}", "labelMath": "$\\mathrm{ThresholdBruteforce}_{R}$", "blockStyle": "rectangle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "y_pred_brute": {"name": "y_pred_brute", "label": "$y_{pred}^{brute}$", "labelMeasure": "y_{pred}^{brute}", "labelMath": "$y_{pred}^{brute}$", "blockStyle": "circle", "register": "action", "face": "#FFF7ED", "edge": "#C2410C"}, "Critic_action": {"name": "Critic_action", "label": "$\\mathcal{C}_{r}^{\\gamma}$", "labelMeasure": "\\mathcal{C}_{r}^{\\gamma}", "labelMath": "$\\mathcal{C}_{r}^{\\gamma}$", "blockStyle": "rectangle", "register": "critique", "face": "#FEE2E2", "edge": "#991B1B"}, "m_gamma": {"name": "m_gamma", "label": "$m_{\\gamma}$", "labelMeasure": "m_{\\gamma}", "labelMath": "$m_{\\gamma}$", "blockStyle": "circle", "register": "critique", "face": "#FEE2E2", "edge": "#991B1B"}, "Critic_world": {"name": "Critic_world", "label": "$\\mathcal{C}_{r}^{wm}$", "labelMeasure": "\\mathcal{C}_{r}^{wm}", "labelMath": "$\\mathcal{C}_{r}^{wm}$", "blockStyle": "rectangle", "register": "critique", "face": "#FEE2E2", "edge": "#991B1B"}, "m_wm": {"name": "m_wm", "label": "$m_{wm}$", "labelMeasure": "m_{wm}", "labelMath": "$m_{wm}$", "blockStyle": "circle", "register": "critique", "face": "#FEE2E2", "edge": "#991B1B"}, "Critic_world_sim": {"name": "Critic_world_sim", "label": "$\\mathcal{C}_{r}^{wm,sim}$", "labelMeasure": "\\mathcal{C}_{r}^{wm,sim}", "labelMath": "$\\mathcal{C}_{r}^{wm,sim}$", "blockStyle": "rectangle", "register": "critique", "face": "#FEE2E2", "edge": "#991B1B"}, "m_wm_sim": {"name": "m_wm_sim", "label": "$m_{wm}^{sim}$", "labelMeasure": "m_{wm}^{sim}", "labelMath": "$m_{wm}^{sim}$", "blockStyle": "circle", "register": "critique", "face": "#FEE2E2", "edge": "#991B1B"}, "Critic_xgb": {"name": "Critic_xgb", "label": "$\\mathcal{C}_{r}^{XGB}$", "labelMeasure": "\\mathcal{C}_{r}^{XGB}", "labelMath": "$\\mathcal{C}_{r}^{XGB}$", "blockStyle": "rectangle", "register": "critique", "face": "#FEE2E2", "edge": "#991B1B"}, "m_xgb": {"name": "m_xgb", "label": "$m_{XGB}$", "labelMeasure": "m_{XGB}", "labelMath": "$m_{XGB}$", "blockStyle": "circle", "register": "critique", "face": "#FEE2E2", "edge": "#991B1B"}, "m": {"name": "m", "label": "$m$", "labelMeasure": "m", "labelMath": "$m$", "blockStyle": "circle", "register": "critique", "face": "#FEE2E2", "edge": "#991B1B"}, "ScoreBase": {"name": "ScoreBase", "label": "$\\mathcal{B}_{R}$", "labelMeasure": "\\mathcal{B}_{R}", "labelMath": "$\\mathcal{B}_{R}$", "blockStyle": "rectangle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "z_H_R": {"name": "z_H_R", "label": "$z_{H_R}$", "labelMeasure": "z_{H_R}", "labelMath": "$z_{H_R}$", "blockStyle": "circle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "ScoreOp": {"name": "ScoreOp", "label": "$\\phi_R$", "labelMeasure": "\\phi_R", "labelMath": "$\\phi_R$", "blockStyle": "rectangle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "s_H_R": {"name": "s_H_R", "label": "$s_{H_R}$", "labelMeasure": "s_{H_R}", "labelMath": "$s_{H_R}$", "blockStyle": "circle", "register": "reflexe", "face": "#FFFBEB", "edge": "#B45309"}, "H": {"name": "H", "label": "$H$", "labelMeasure": "H", "labelMath": "$H$", "blockStyle": "rectangle", "register": "homeostasie", "face": "#F3F4F6", "edge": "#111827"}, "vartheta_data": {"name": "vartheta_data", "label": "$\\vartheta_{data}$", "labelMeasure": "\\vartheta_{data}", "labelMath": "$\\vartheta_{data}$", "blockStyle": "circle", "register": "homeostasie", "face": "#F3F4F6", "edge": "#111827"}, "vartheta_model": {"name": "vartheta_model", "label": "$\\vartheta_{model}$", "labelMeasure": "\\vartheta_{model}", "labelMath": "$\\vartheta_{model}$", "blockStyle": "circle", "register": "homeostasie", "face": "#F3F4F6", "edge": "#111827"}, "vartheta_decision": {"name": "vartheta_decision", "label": "$\\vartheta_{decision}$", "labelMeasure": "\\vartheta_{decision}", "labelMath": "$\\vartheta_{decision}$", "blockStyle": "circle", "register": "homeostasie", "face": "#F3F4F6", "edge": "#111827"}}, "positions": {"eta_strategy": {"x": 1258.4, "y": 62.39999999999996}, "f_dataset": {"x": 1216.8000000000002, "y": 343.2}, "DatasetCreation": {"x": 1310.4, "y": 468.0}, "gamma_dataset": {"x": 1528.8000000000002, "y": 468.0}, "M_dataset_prior": {"x": 1154.4, "y": 582.4}, "Append_M_y": {"x": 1341.6000000000001, "y": 582.4}, "M_dataset": {"x": 1508.0000000000002, "y": 582.4}, "Read_M_y": {"x": 1508.0000000000002, "y": 717.5999999999999}, "eta_bar_dataset": {"x": 1331.2, "y": 717.5999999999999}, "Per_Dataset": {"x": 1164.8000000000002, "y": 717.5999999999999}, "alpha_dataset": {"x": 1164.8000000000002, "y": 873.6}, "eta_market": {"x": 2038.4, "y": 62.39999999999996}, "DataGathering": {"x": 2038.4, "y": 197.59999999999994}, "alpha_X": {"x": 2038.4, "y": 332.79999999999995}, "f_preprocess": {"x": 1903.2, "y": 353.59999999999997}, "Preprocess_Cog": {"x": 2038.4, "y": 468.0}, "gamma_preprocess": {"x": 2298.4, "y": 468.0}, "M_preprocess_prior": {"x": 2028.0, "y": 603.1999999999999}, "Append_M_preprocess": {"x": 2236.0, "y": 603.1999999999999}, "M_preprocess": {"x": 2444.0, "y": 603.1999999999999}, "Read_M_preprocess": {"x": 2444.0, "y": 748.8}, "eta_bar_preprocess": {"x": 2236.0, "y": 748.8}, "Per_Preprocess": {"x": 2028.0, "y": 748.8}, "alpha_prepared": {"x": 2028.0, "y": 894.4}, "f_norm": {"x": 2163.2000000000003, "y": 904.8}, "Norm_Cog": {"x": 2028.0, "y": 1040.0}, "gamma_norm": {"x": 2236.0, "y": 1040.0}, "M_norm_prior": {"x": 2028.0, "y": 1185.6}, "Append_M_norm": {"x": 2236.0, "y": 1185.6}, "M_norm": {"x": 2444.0, "y": 1185.6}, "Read_M_norm": {"x": 2444.0, "y": 1331.2}, "eta_bar_norm": {"x": 2236.0, "y": 1331.2}, "Per_Norm": {"x": 2028.0, "y": 1331.2}, "alpha_X_context": {"x": 2038.4, "y": 1622.3999999999999}, "alpha_Y_context": {"x": 1459.4320000000002, "y": 874.4319999999999}, "CPD": {"x": 1674.4, "y": 1830.4}, "beta_CPD": {"x": 1674.4, "y": 1965.6}, "VSN": {"x": 1934.4, "y": 1830.4}, "beta_VSN": {"x": 1934.4, "y": 1965.6}, "Enc_Cog": {"x": 2194.4, "y": 1830.4}, "beta_enc": {"x": 2194.4, "y": 1965.6}, "Dec_Gen": {"x": 2423.2000000000003, "y": 1965.6}, "S_dec": {"x": 2423.2000000000003, "y": 1830.4}, "eta_dec": {"x": 2631.2000000000003, "y": 1965.6}, "TimeFM": {"x": 1383.2, "y": 1830.4}, "beta_FM": {"x": 1383.2, "y": 1965.6}, "MultiTimeFM": {"x": 1133.6000000000001, "y": 1830.4}, "beta_MFM": {"x": 1133.6000000000001, "y": 1965.6}, "RegimeEncoder": {"x": 2194.4, "y": 2194.4}, "beta_regime": {"x": 2402.4, "y": 2194.4}, "Gen_Regime": {"x": 2610.4, "y": 2194.4}, "S_regime": {"x": 2610.4, "y": 2059.2}, "eta_regime": {"x": 2818.4, "y": 2194.4}, "Union_STM": {"x": 3026.4, "y": 2350.4}, "eta_bar_regime": {"x": 2818.4, "y": 2475.2}, "M_reg_STM": {"x": 2610.4, "y": 2475.2}, "STM_append": {"x": 2818.4, "y": 2610.4}, "M_reg_STM_filled": {"x": 3026.4, "y": 2610.4}, "STM_read": {"x": 3026.4, "y": 2766.4}, "eta_bar_STM": {"x": 2818.4, "y": 2766.4}, "Per_STM": {"x": 2610.4, "y": 2766.4}, "alpha_STM": {"x": 2402.4, "y": 2766.4}, "M_reg_LTM": {"x": 3546.2960000000003, "y": 2475.9280000000003}, "LTM_append": {"x": 3546.4, "y": 2610.4}, "M_reg_LTM_filled": {"x": 3754.4, "y": 2610.4}, "LTM_read": {"x": 3754.4, "y": 2766.4}, "eta_bar_LTM": {"x": 3546.4, "y": 2766.4}, "Per_LTM": {"x": 3338.4, "y": 2766.4}, "alpha_LTM": {"x": 3192.592, "y": 2766.192}, "Clustering_Pi": {"x": 2789.904, "y": 2975.3360000000002}, "beta_cluster": {"x": 2922.4, "y": 2974.4}, "Gen_Cluster": {"x": 3130.4, "y": 3130.4}, "S_cluster": {"x": 3130.4, "y": 3265.6}, "eta_cluster": {"x": 3338.4, "y": 3130.4}, "Union_Learned": {"x": 3546.4, "y": 3130.4}, "eta_bar_learned": {"x": 3546.4, "y": 3286.4}, "M_reg_learned": {"x": 3338.4, "y": 3286.4}, "Learned_append": {"x": 3546.4, "y": 3421.6}, "M_reg_learned_filled": {"x": 3754.4, "y": 3421.6}, "Learned_read": {"x": 3754.4, "y": 3577.6}, "eta_bar_learned_memory": {"x": 3546.4, "y": 3577.6}, "Per_Learned": {"x": 3338.4, "y": 3577.6}, "alpha_learned": {"x": 3130.4, "y": 3577.6}, "Similarity_R": {"x": 2610.4, "y": 3577.6}, "gamma_cluster": {"x": 2381.6000000000004, "y": 3577.6}, "Memory_Cog": {"x": 2922.4, "y": 3806.4}, "beta_memory": {"x": 2693.6000000000004, "y": 3806.4}, "CrossAttention": {"x": 2454.4, "y": 3806.4}, "beta_sim": {"x": 2194.4, "y": 3806.4}, "Dec_Gen_Sim": {"x": 2423.2000000000003, "y": 4014.4}, "S_dec_sim": {"x": 2423.2000000000003, "y": 4149.599999999999}, "eta_dec_sim": {"x": 2631.2000000000003, "y": 4014.4}, "XGB": {"x": 1882.4, "y": 4430.400000000001}, "beta_proba": {"x": 1622.4, "y": 4430.400000000001}, "f_threshold_cluster": {"x": 1383.2, "y": 4170.400000000001}, "ThresholdClustering": {"x": 1102.4, "y": 4170.400000000001}, "y_pred_cluster": {"x": 842.4000000000001, "y": 4170.400000000001}, "f_threshold": {"x": 1383.2, "y": 4430.400000000001}, "Threshold": {"x": 1102.4, "y": 4430.400000000001}, "y_pred": {"x": 842.4000000000001, "y": 4430.400000000001}, "f_threshold_brute": {"x": 1383.2, "y": 4690.400000000001}, "ThresholdBruteforce": {"x": 1102.4, "y": 4690.400000000001}, "y_pred_brute": {"x": 842.4000000000001, "y": 4690.400000000001}, "Critic_action": {"x": 551.2, "y": 4430.400000000001}, "m_gamma": {"x": 322.40000000000015, "y": 4430.400000000001}, "Critic_world": {"x": 2922.4, "y": 1965.6}, "m_wm": {"x": 3130.4, "y": 1965.6}, "Critic_world_sim": {"x": 2922.4, "y": 4014.4}, "m_wm_sim": {"x": 3130.4, "y": 4014.4}, "Critic_xgb": {"x": 1622.4, "y": 4825.599999999999}, "m_xgb": {"x": 1362.4, "y": 4825.599999999999}, "m": {"x": 114.40000000000015, "y": 4170.400000000001}, "ScoreBase": {"x": 114.40000000000015, "y": 3983.2}, "z_H_R": {"x": 114.40000000000015, "y": 3796.0}, "ScoreOp": {"x": 114.40000000000015, "y": 3608.8}, "s_H_R": {"x": 114.40000000000015, "y": 3421.6}, "H": {"x": 114.40000000000015, "y": 3234.4}, "vartheta_data": {"x": 842.4000000000001, "y": 2974.4}, "vartheta_model": {"x": 1258.4, "y": 2974.4}, "vartheta_decision": {"x": 1674.4, "y": 2974.4}}, "basePositions": {"eta_strategy": {"x": -6.0, "y": 8.0}, "f_dataset": {"x": -6.4, "y": 5.3}, "DatasetCreation": {"x": -5.5, "y": 4.1}, "gamma_dataset": {"x": -3.4, "y": 4.1}, "M_dataset_prior": {"x": -7.0, "y": 3.0}, "Append_M_y": {"x": -5.2, "y": 3.0}, "M_dataset": {"x": -3.6, "y": 3.0}, "Read_M_y": {"x": -3.6, "y": 1.7}, "eta_bar_dataset": {"x": -5.3, "y": 1.7}, "Per_Dataset": {"x": -6.9, "y": 1.7}, "alpha_dataset": {"x": -6.9, "y": 0.2}, "eta_market": {"x": 1.5, "y": 8.0}, "DataGathering": {"x": 1.5, "y": 6.7}, "alpha_X": {"x": 1.5, "y": 5.4}, "f_preprocess": {"x": 0.2, "y": 5.2}, "Preprocess_Cog": {"x": 1.5, "y": 4.1}, "gamma_preprocess": {"x": 4.0, "y": 4.1}, "M_preprocess_prior": {"x": 1.4, "y": 2.8}, "Append_M_preprocess": {"x": 3.4, "y": 2.8}, "M_preprocess": {"x": 5.4, "y": 2.8}, "Read_M_preprocess": {"x": 5.4, "y": 1.4}, "eta_bar_preprocess": {"x": 3.4, "y": 1.4}, "Per_Preprocess": {"x": 1.4, "y": 1.4}, "alpha_prepared": {"x": 1.4, "y": 0.0}, "f_norm": {"x": 2.7, "y": -0.1}, "Norm_Cog": {"x": 1.4, "y": -1.4}, "gamma_norm": {"x": 3.4, "y": -1.4}, "M_norm_prior": {"x": 1.4, "y": -2.8}, "Append_M_norm": {"x": 3.4, "y": -2.8}, "M_norm": {"x": 5.4, "y": -2.8}, "Read_M_norm": {"x": 5.4, "y": -4.2}, "eta_bar_norm": {"x": 3.4, "y": -4.2}, "Per_Norm": {"x": 1.4, "y": -4.2}, "alpha_X_context": {"x": 1.5, "y": -7.0}, "alpha_Y_context": {"x": -4.067, "y": 0.192}, "CPD": {"x": -2.0, "y": -9.0}, "beta_CPD": {"x": -2.0, "y": -10.3}, "VSN": {"x": 0.5, "y": -9.0}, "beta_VSN": {"x": 0.5, "y": -10.3}, "Enc_Cog": {"x": 3.0, "y": -9.0}, "beta_enc": {"x": 3.0, "y": -10.3}, "Dec_Gen": {"x": 5.2, "y": -10.3}, "S_dec": {"x": 5.2, "y": -9.0}, "eta_dec": {"x": 7.2, "y": -10.3}, "TimeFM": {"x": -4.8, "y": -9.0}, "beta_FM": {"x": -4.8, "y": -10.3}, "MultiTimeFM": {"x": -7.2, "y": -9.0}, "beta_MFM": {"x": -7.2, "y": -10.3}, "RegimeEncoder": {"x": 3.0, "y": -12.5}, "beta_regime": {"x": 5.0, "y": -12.5}, "Gen_Regime": {"x": 7.0, "y": -12.5}, "S_regime": {"x": 7.0, "y": -11.2}, "eta_regime": {"x": 9.0, "y": -12.5}, "Union_STM": {"x": 11.0, "y": -14.0}, "eta_bar_regime": {"x": 9.0, "y": -15.2}, "M_reg_STM": {"x": 7.0, "y": -15.2}, "STM_append": {"x": 9.0, "y": -16.5}, "M_reg_STM_filled": {"x": 11.0, "y": -16.5}, "STM_read": {"x": 11.0, "y": -18.0}, "eta_bar_STM": {"x": 9.0, "y": -18.0}, "Per_STM": {"x": 7.0, "y": -18.0}, "alpha_STM": {"x": 5.0, "y": -18.0}, "M_reg_LTM": {"x": 15.999, "y": -15.207}, "LTM_append": {"x": 16.0, "y": -16.5}, "M_reg_LTM_filled": {"x": 18.0, "y": -16.5}, "LTM_read": {"x": 18.0, "y": -18.0}, "eta_bar_LTM": {"x": 16.0, "y": -18.0}, "Per_LTM": {"x": 14.0, "y": -18.0}, "alpha_LTM": {"x": 12.598, "y": -17.998}, "Clustering_Pi": {"x": 8.726, "y": -20.009}, "beta_cluster": {"x": 10.0, "y": -20.0}, "Gen_Cluster": {"x": 12.0, "y": -21.5}, "S_cluster": {"x": 12.0, "y": -22.8}, "eta_cluster": {"x": 14.0, "y": -21.5}, "Union_Learned": {"x": 16.0, "y": -21.5}, "eta_bar_learned": {"x": 16.0, "y": -23.0}, "M_reg_learned": {"x": 14.0, "y": -23.0}, "Learned_append": {"x": 16.0, "y": -24.3}, "M_reg_learned_filled": {"x": 18.0, "y": -24.3}, "Learned_read": {"x": 18.0, "y": -25.8}, "eta_bar_learned_memory": {"x": 16.0, "y": -25.8}, "Per_Learned": {"x": 14.0, "y": -25.8}, "alpha_learned": {"x": 12.0, "y": -25.8}, "Similarity_R": {"x": 7.0, "y": -25.8}, "gamma_cluster": {"x": 4.8, "y": -25.8}, "Memory_Cog": {"x": 10.0, "y": -28.0}, "beta_memory": {"x": 7.8, "y": -28.0}, "CrossAttention": {"x": 5.5, "y": -28.0}, "beta_sim": {"x": 3.0, "y": -28.0}, "Dec_Gen_Sim": {"x": 5.2, "y": -30.0}, "S_dec_sim": {"x": 5.2, "y": -31.3}, "eta_dec_sim": {"x": 7.2, "y": -30.0}, "XGB": {"x": 0.0, "y": -34.0}, "beta_proba": {"x": -2.5, "y": -34.0}, "f_threshold_cluster": {"x": -4.8, "y": -31.5}, "ThresholdClustering": {"x": -7.5, "y": -31.5}, "y_pred_cluster": {"x": -10.0, "y": -31.5}, "f_threshold": {"x": -4.8, "y": -34.0}, "Threshold": {"x": -7.5, "y": -34.0}, "y_pred": {"x": -10.0, "y": -34.0}, "f_threshold_brute": {"x": -4.8, "y": -36.5}, "ThresholdBruteforce": {"x": -7.5, "y": -36.5}, "y_pred_brute": {"x": -10.0, "y": -36.5}, "Critic_action": {"x": -12.8, "y": -34.0}, "m_gamma": {"x": -15.0, "y": -34.0}, "Critic_world": {"x": 10.0, "y": -10.3}, "m_wm": {"x": 12.0, "y": -10.3}, "Critic_world_sim": {"x": 10.0, "y": -30.0}, "m_wm_sim": {"x": 12.0, "y": -30.0}, "Critic_xgb": {"x": -2.5, "y": -37.8}, "m_xgb": {"x": -5.0, "y": -37.8}, "m": {"x": -17.0, "y": -31.5}, "ScoreBase": {"x": -17.0, "y": -29.7}, "z_H_R": {"x": -17.0, "y": -27.9}, "ScoreOp": {"x": -17.0, "y": -26.1}, "s_H_R": {"x": -17.0, "y": -24.3}, "H": {"x": -17.0, "y": -22.5}, "vartheta_data": {"x": -10.0, "y": -20.0}, "vartheta_model": {"x": -6.0, "y": -20.0}, "vartheta_decision": {"x": -2.0, "y": -20.0}}, "edges": [{"source": "eta_strategy", "target": "f_dataset", "kind": "information", "label": "$f_{\\eta'_A}$", "labelMeasure": "f_{\\eta'_A}", "labelMath": "$f_{\\eta'_A}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "f_dataset", "target": "DatasetCreation", "kind": "reflex", "label": "$f_{\\eta'_A}$", "labelMeasure": "f_{\\eta'_A}", "labelMath": "$f_{\\eta'_A}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_prepared", "target": "DatasetCreation", "kind": "reflex", "label": "$\\alpha_X^{prep}$", "labelMeasure": "\\alpha_X^{prep}", "labelMath": "$\\alpha_X^{prep}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "DatasetCreation", "target": "gamma_dataset", "kind": "reflex", "label": "$\\gamma_A$", "labelMeasure": "\\gamma_A", "labelMath": "$\\gamma_A$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_dataset_prior", "target": "Append_M_y", "kind": "memory", "label": "$M_Y^{t}$", "labelMeasure": "M_Y^{t}", "labelMath": "$M_Y^{t}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "gamma_dataset", "target": "Append_M_y", "kind": "memory", "label": "$\\gamma_A$", "labelMeasure": "\\gamma_A", "labelMath": "$\\gamma_A$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Append_M_y", "target": "M_dataset", "kind": "memory", "label": "$M_Y^{t+1}$", "labelMeasure": "M_Y^{t+1}", "labelMath": "$M_Y^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_dataset", "target": "Read_M_y", "kind": "memory", "label": "$M_Y$", "labelMeasure": "M_Y", "labelMath": "$M_Y$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Read_M_y", "target": "eta_bar_dataset", "kind": "memory", "label": "$\\bar{\\eta}_{Y,X}^{sup}$", "labelMeasure": "\\bar{\\eta}_{Y,X}^{sup}", "labelMath": "$\\bar{\\eta}_{Y,X}^{sup}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_bar_dataset", "target": "Per_Dataset", "kind": "perception", "label": "$Per$", "labelMeasure": "Per", "labelMath": "$Per$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Per_Dataset", "target": "alpha_dataset", "kind": "perception", "label": "$\\alpha_{Y,X}^{sup}$", "labelMeasure": "\\alpha_{Y,X}^{sup}", "labelMath": "$\\alpha_{Y,X}^{sup}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Per_Dataset", "target": "alpha_Y_context", "kind": "perception", "label": "$\\alpha_Y^{ctx}$", "labelMeasure": "\\alpha_Y^{ctx}", "labelMath": "$\\alpha_Y^{ctx}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_market", "target": "DataGathering", "kind": "perception", "label": "$Per$", "labelMeasure": "Per", "labelMath": "$Per$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "DataGathering", "target": "alpha_X", "kind": "perception", "label": "$\\alpha_X$", "labelMeasure": "\\alpha_X", "labelMath": "$\\alpha_X$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_X", "target": "Preprocess_Cog", "kind": "reflex", "label": "$\\alpha_X$", "labelMeasure": "\\alpha_X", "labelMath": "$\\alpha_X$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "f_preprocess", "target": "Preprocess_Cog", "kind": "reflex", "label": "$f_{prep}$", "labelMeasure": "f_{prep}", "labelMath": "$f_{prep}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Preprocess_Cog", "target": "gamma_preprocess", "kind": "reflex", "label": "$\\gamma_{prep}$", "labelMeasure": "\\gamma_{prep}", "labelMath": "$\\gamma_{prep}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_preprocess_prior", "target": "Append_M_preprocess", "kind": "memory", "label": "$M_{prep}^{t}$", "labelMeasure": "M_{prep}^{t}", "labelMath": "$M_{prep}^{t}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "gamma_preprocess", "target": "Append_M_preprocess", "kind": "memory", "label": "$\\gamma_{prep}$", "labelMeasure": "\\gamma_{prep}", "labelMath": "$\\gamma_{prep}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Append_M_preprocess", "target": "M_preprocess", "kind": "memory", "label": "$M_{prep}^{t+1}$", "labelMeasure": "M_{prep}^{t+1}", "labelMath": "$M_{prep}^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_preprocess", "target": "Read_M_preprocess", "kind": "memory", "label": "$M_{prep}^{t+1}$", "labelMeasure": "M_{prep}^{t+1}", "labelMath": "$M_{prep}^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Read_M_preprocess", "target": "eta_bar_preprocess", "kind": "memory", "label": "$\\bar{\\eta}_{prep}$", "labelMeasure": "\\bar{\\eta}_{prep}", "labelMath": "$\\bar{\\eta}_{prep}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_bar_preprocess", "target": "Per_Preprocess", "kind": "perception", "label": "$Per$", "labelMeasure": "Per", "labelMath": "$Per$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Per_Preprocess", "target": "alpha_prepared", "kind": "perception", "label": "$\\alpha_X^{prep}$", "labelMeasure": "\\alpha_X^{prep}", "labelMath": "$\\alpha_X^{prep}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_prepared", "target": "Norm_Cog", "kind": "reflex", "label": "$\\alpha_X^{prep}$", "labelMeasure": "\\alpha_X^{prep}", "labelMath": "$\\alpha_X^{prep}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "f_norm", "target": "Norm_Cog", "kind": "reflex", "label": "$f_{norm}$", "labelMeasure": "f_{norm}", "labelMath": "$f_{norm}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Norm_Cog", "target": "gamma_norm", "kind": "reflex", "label": "$\\gamma_{norm}$", "labelMeasure": "\\gamma_{norm}", "labelMath": "$\\gamma_{norm}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_norm_prior", "target": "Append_M_norm", "kind": "memory", "label": "$M_{norm}^{t}$", "labelMeasure": "M_{norm}^{t}", "labelMath": "$M_{norm}^{t}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "gamma_norm", "target": "Append_M_norm", "kind": "memory", "label": "$\\gamma_{norm}$", "labelMeasure": "\\gamma_{norm}", "labelMath": "$\\gamma_{norm}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Append_M_norm", "target": "M_norm", "kind": "memory", "label": "$M_{norm}^{t+1}$", "labelMeasure": "M_{norm}^{t+1}", "labelMath": "$M_{norm}^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_norm", "target": "Read_M_norm", "kind": "memory", "label": "$M_{norm}^{t+1}$", "labelMeasure": "M_{norm}^{t+1}", "labelMath": "$M_{norm}^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Read_M_norm", "target": "eta_bar_norm", "kind": "memory", "label": "$\\bar{\\eta}_{norm}$", "labelMeasure": "\\bar{\\eta}_{norm}", "labelMath": "$\\bar{\\eta}_{norm}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_bar_norm", "target": "Per_Norm", "kind": "perception", "label": "$Per$", "labelMeasure": "Per", "labelMath": "$Per$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Per_Norm", "target": "alpha_X_context", "kind": "perception", "label": "$\\alpha_X^{ctx}$", "labelMeasure": "\\alpha_X^{ctx}", "labelMath": "$\\alpha_X^{ctx}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_X_context", "target": "CPD", "kind": "information", "label": "$Cog$", "labelMeasure": "Cog", "labelMath": "$Cog$", "rad": -0.15, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "CPD", "target": "beta_CPD", "kind": "information", "label": "$\\beta_{CPD}$", "labelMeasure": "\\beta_{CPD}", "labelMath": "$\\beta_{CPD}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_X_context", "target": "VSN", "kind": "information", "label": "$Cog$", "labelMeasure": "Cog", "labelMath": "$Cog$", "rad": -0.08, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "VSN", "target": "beta_VSN", "kind": "information", "label": "$\\beta_{VSN}$", "labelMeasure": "\\beta_{VSN}", "labelMath": "$\\beta_{VSN}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_X_context", "target": "Enc_Cog", "kind": "information", "label": "$Cog$", "labelMeasure": "Cog", "labelMath": "$Cog$", "rad": 0.08, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Enc_Cog", "target": "beta_enc", "kind": "information", "label": "$\\beta_{Enc}$", "labelMeasure": "\\beta_{Enc}", "labelMath": "$\\beta_{Enc}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_enc", "target": "Dec_Gen", "kind": "generation", "label": "$\\beta_{Enc}$", "labelMeasure": "\\beta_{Enc}", "labelMath": "$\\beta_{Enc}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "S_dec", "target": "Dec_Gen", "kind": "state", "label": "$S_{Dec}$", "labelMeasure": "S_{Dec}", "labelMath": "$S_{Dec}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Dec_Gen", "target": "eta_dec", "kind": "generation", "label": "$\\eta'_s$", "labelMeasure": "\\eta'_s", "labelMath": "$\\eta'_s$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_Y_context", "target": "TimeFM", "kind": "information", "label": "$Y_{\\leq t}$", "labelMeasure": "Y_{\\leq t}", "labelMath": "$Y_{\\leq t}$", "rad": 0.15, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "TimeFM", "target": "beta_FM", "kind": "information", "label": "$\\beta_{FM}$", "labelMeasure": "\\beta_{FM}", "labelMath": "$\\beta_{FM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_X_context", "target": "MultiTimeFM", "kind": "information", "label": "$X_{\\leq t}^{multi}$", "labelMeasure": "X_{\\leq t}^{multi}", "labelMath": "$X_{\\leq t}^{multi}$", "rad": 0.22, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "MultiTimeFM", "target": "beta_MFM", "kind": "information", "label": "$\\beta_{MFM}$", "labelMeasure": "\\beta_{MFM}", "labelMath": "$\\beta_{MFM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_X_context", "target": "RegimeEncoder", "kind": "information", "label": "$Cog$", "labelMeasure": "Cog", "labelMath": "$Cog$", "rad": 0.18, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "RegimeEncoder", "target": "beta_regime", "kind": "information", "label": "$\\beta_{Reg}$", "labelMeasure": "\\beta_{Reg}", "labelMath": "$\\beta_{Reg}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_regime", "target": "Gen_Regime", "kind": "generation", "label": "$\\beta_{Reg}$", "labelMeasure": "\\beta_{Reg}", "labelMath": "$\\beta_{Reg}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "S_regime", "target": "Gen_Regime", "kind": "state", "label": "$S_{Reg}$", "labelMeasure": "S_{Reg}", "labelMath": "$S_{Reg}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Gen_Regime", "target": "eta_regime", "kind": "generation", "label": "$\\eta'_{Reg}$", "labelMeasure": "\\eta'_{Reg}", "labelMath": "$\\eta'_{Reg}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_regime", "target": "Union_STM", "kind": "information", "label": "$\\eta'_{Reg}$", "labelMeasure": "\\eta'_{Reg}", "labelMath": "$\\eta'_{Reg}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Union_STM", "target": "eta_bar_regime", "kind": "information", "label": "$\\bar{\\eta}_{Reg,STM}$", "labelMeasure": "\\bar{\\eta}_{Reg,STM}", "labelMath": "$\\bar{\\eta}_{Reg,STM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_reg_STM", "target": "STM_append", "kind": "memory", "label": "$M_{Reg,STM}^{t}$", "labelMeasure": "M_{Reg,STM}^{t}", "labelMath": "$M_{Reg,STM}^{t}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_bar_regime", "target": "STM_append", "kind": "memory", "label": "$\\bar{\\eta}_{Reg,STM}$", "labelMeasure": "\\bar{\\eta}_{Reg,STM}", "labelMath": "$\\bar{\\eta}_{Reg,STM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "STM_append", "target": "M_reg_STM_filled", "kind": "memory", "label": "$M_{Reg,STM}^{t+1}$", "labelMeasure": "M_{Reg,STM}^{t+1}", "labelMath": "$M_{Reg,STM}^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_reg_STM_filled", "target": "STM_read", "kind": "memory", "label": "$M_{Reg,STM}^{t+1}$", "labelMeasure": "M_{Reg,STM}^{t+1}", "labelMath": "$M_{Reg,STM}^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "STM_read", "target": "eta_bar_STM", "kind": "memory", "label": "$\\bar{\\eta}_{Reg,STM}^{read}$", "labelMeasure": "\\bar{\\eta}_{Reg,STM}^{read}", "labelMath": "$\\bar{\\eta}_{Reg,STM}^{read}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_bar_STM", "target": "Per_STM", "kind": "perception", "label": "$Per$", "labelMeasure": "Per", "labelMath": "$Per$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Per_STM", "target": "alpha_STM", "kind": "perception", "label": "$\\alpha_{Reg,STM}$", "labelMeasure": "\\alpha_{Reg,STM}", "labelMath": "$\\alpha_{Reg,STM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_regime", "target": "LTM_append", "kind": "memory", "label": "$\\eta'_{Reg}$", "labelMeasure": "\\eta'_{Reg}", "labelMath": "$\\eta'_{Reg}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_reg_LTM", "target": "LTM_append", "kind": "memory", "label": "$M_{Reg,LTM}^{t}$", "labelMeasure": "M_{Reg,LTM}^{t}", "labelMath": "$M_{Reg,LTM}^{t}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "LTM_append", "target": "M_reg_LTM_filled", "kind": "memory", "label": "$M_{Reg,LTM}^{t+1}$", "labelMeasure": "M_{Reg,LTM}^{t+1}", "labelMath": "$M_{Reg,LTM}^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_reg_LTM_filled", "target": "LTM_read", "kind": "memory", "label": "$M_{Reg,LTM}^{t+1}$", "labelMeasure": "M_{Reg,LTM}^{t+1}", "labelMath": "$M_{Reg,LTM}^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "LTM_read", "target": "eta_bar_LTM", "kind": "memory", "label": "$\\bar{\\eta}_{Reg,LTM}^{read}$", "labelMeasure": "\\bar{\\eta}_{Reg,LTM}^{read}", "labelMath": "$\\bar{\\eta}_{Reg,LTM}^{read}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_bar_LTM", "target": "Per_LTM", "kind": "perception", "label": "$Per$", "labelMeasure": "Per", "labelMath": "$Per$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Per_LTM", "target": "alpha_LTM", "kind": "perception", "label": "$\\alpha_{Reg,LTM}$", "labelMeasure": "\\alpha_{Reg,LTM}", "labelMath": "$\\alpha_{Reg,LTM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_LTM", "target": "Clustering_Pi", "kind": "information", "label": "$\\alpha_{Reg,LTM}$", "labelMeasure": "\\alpha_{Reg,LTM}", "labelMath": "$\\alpha_{Reg,LTM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Clustering_Pi", "target": "beta_cluster", "kind": "information", "label": "$\\beta_{cluster}$", "labelMeasure": "\\beta_{cluster}", "labelMath": "$\\beta_{cluster}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_cluster", "target": "Gen_Cluster", "kind": "generation", "label": "$\\beta_{cluster}$", "labelMeasure": "\\beta_{cluster}", "labelMath": "$\\beta_{cluster}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "S_cluster", "target": "Gen_Cluster", "kind": "state", "label": "$S_{cluster}$", "labelMeasure": "S_{cluster}", "labelMath": "$S_{cluster}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Gen_Cluster", "target": "eta_cluster", "kind": "generation", "label": "$\\eta'_{cluster}$", "labelMeasure": "\\eta'_{cluster}", "labelMath": "$\\eta'_{cluster}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_cluster", "target": "Union_Learned", "kind": "information", "label": "$\\eta'_{cluster}$", "labelMeasure": "\\eta'_{cluster}", "labelMath": "$\\eta'_{cluster}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Union_Learned", "target": "eta_bar_learned", "kind": "information", "label": "$\\bar{\\eta}_{Reg,learned}$", "labelMeasure": "\\bar{\\eta}_{Reg,learned}", "labelMath": "$\\bar{\\eta}_{Reg,learned}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_reg_learned", "target": "Learned_append", "kind": "memory", "label": "$M_{Reg,learned}^{t}$", "labelMeasure": "M_{Reg,learned}^{t}", "labelMath": "$M_{Reg,learned}^{t}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_bar_learned", "target": "Learned_append", "kind": "memory", "label": "$\\bar{\\eta}_{Reg,learned}$", "labelMeasure": "\\bar{\\eta}_{Reg,learned}", "labelMath": "$\\bar{\\eta}_{Reg,learned}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Learned_append", "target": "M_reg_learned_filled", "kind": "memory", "label": "$M_{Reg,learned}^{t+1}$", "labelMeasure": "M_{Reg,learned}^{t+1}", "labelMath": "$M_{Reg,learned}^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "M_reg_learned_filled", "target": "Learned_read", "kind": "memory", "label": "$M_{Reg,learned}^{t+1}$", "labelMeasure": "M_{Reg,learned}^{t+1}", "labelMath": "$M_{Reg,learned}^{t+1}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Learned_read", "target": "eta_bar_learned_memory", "kind": "memory", "label": "$\\bar{\\eta}_{Reg,learned}^{read}$", "labelMeasure": "\\bar{\\eta}_{Reg,learned}^{read}", "labelMath": "$\\bar{\\eta}_{Reg,learned}^{read}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_bar_learned_memory", "target": "Per_Learned", "kind": "perception", "label": "$Per$", "labelMeasure": "Per", "labelMath": "$Per$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Per_Learned", "target": "alpha_learned", "kind": "perception", "label": "$\\alpha_{Reg,learned}$", "labelMeasure": "\\alpha_{Reg,learned}", "labelMath": "$\\alpha_{Reg,learned}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_STM", "target": "Similarity_R", "kind": "reflex", "label": "$\\alpha_{Reg,STM}$", "labelMeasure": "\\alpha_{Reg,STM}", "labelMath": "$\\alpha_{Reg,STM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_learned", "target": "Similarity_R", "kind": "reflex", "label": "$\\alpha_{Reg,learned}$", "labelMeasure": "\\alpha_{Reg,learned}", "labelMath": "$\\alpha_{Reg,learned}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Similarity_R", "target": "gamma_cluster", "kind": "reflex", "label": "$\\gamma_{cluster}$", "labelMeasure": "\\gamma_{cluster}", "labelMath": "$\\gamma_{cluster}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_LTM", "target": "Memory_Cog", "kind": "information", "label": "$Cog_{mem}$", "labelMeasure": "Cog_{mem}", "labelMath": "$Cog_{mem}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_learned", "target": "Memory_Cog", "kind": "information", "label": "$Cog_{learned}$", "labelMeasure": "Cog_{learned}", "labelMath": "$Cog_{learned}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Memory_Cog", "target": "beta_memory", "kind": "information", "label": "$\\beta_{memory}$", "labelMeasure": "\\beta_{memory}", "labelMath": "$\\beta_{memory}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_enc", "target": "CrossAttention", "kind": "information", "label": "$Q=\\beta_{Enc}$", "labelMeasure": "Q=\\beta_{Enc}", "labelMath": "$Q=\\beta_{Enc}$", "rad": -0.18, "labelOffset": [-0.3, 0.26], "sourceGap": null, "targetGap": null}, {"source": "beta_memory", "target": "CrossAttention", "kind": "information", "label": "$K,V=\\beta_{memory}$", "labelMeasure": "K,V=\\beta_{memory}", "labelMath": "$K,V=\\beta_{memory}$", "rad": 0.12, "labelOffset": [0.15, 0.28], "sourceGap": null, "targetGap": null}, {"source": "CrossAttention", "target": "beta_sim", "kind": "information", "label": "$Attn(Q,K,V)=\\beta_{sim}$", "labelMeasure": "Attn(Q,K,V)=\\beta_{sim}", "labelMath": "$Attn(Q,K,V)=\\beta_{sim}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_enc", "target": "Dec_Gen_Sim", "kind": "generation", "label": "$\\beta_{Enc}$", "labelMeasure": "\\beta_{Enc}", "labelMath": "$\\beta_{Enc}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_sim", "target": "Dec_Gen_Sim", "kind": "generation", "label": "$\\beta_{sim}$", "labelMeasure": "\\beta_{sim}", "labelMath": "$\\beta_{sim}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "S_dec_sim", "target": "Dec_Gen_Sim", "kind": "state", "label": "$S_{Dec}^{sim}$", "labelMeasure": "S_{Dec}^{sim}", "labelMath": "$S_{Dec}^{sim}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Dec_Gen_Sim", "target": "eta_dec_sim", "kind": "generation", "label": "$\\eta'_{s,sim}$", "labelMeasure": "\\eta'_{s,sim}", "labelMath": "$\\eta'_{s,sim}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_X_context", "target": "XGB", "kind": "information", "label": "$\\alpha_X^{ctx}$", "labelMeasure": "\\alpha_X^{ctx}", "labelMath": "$\\alpha_X^{ctx}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_CPD", "target": "XGB", "kind": "information", "label": "$\\beta_{CPD}$", "labelMeasure": "\\beta_{CPD}", "labelMath": "$\\beta_{CPD}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_VSN", "target": "XGB", "kind": "information", "label": "$\\beta_{VSN}$", "labelMeasure": "\\beta_{VSN}", "labelMath": "$\\beta_{VSN}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_enc", "target": "XGB", "kind": "information", "label": "$\\beta_{Enc}$", "labelMeasure": "\\beta_{Enc}", "labelMath": "$\\beta_{Enc}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_sim", "target": "XGB", "kind": "information", "label": "$\\beta_{sim}$", "labelMeasure": "\\beta_{sim}", "labelMath": "$\\beta_{sim}$", "rad": 0.12, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "gamma_cluster", "target": "XGB", "kind": "information", "label": "$\\gamma_{cluster}$", "labelMeasure": "\\gamma_{cluster}", "labelMath": "$\\gamma_{cluster}$", "rad": -0.14, "labelOffset": [0.2, -0.24], "sourceGap": null, "targetGap": null}, {"source": "beta_FM", "target": "XGB", "kind": "information", "label": "$\\beta_{FM}$", "labelMeasure": "\\beta_{FM}", "labelMath": "$\\beta_{FM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_MFM", "target": "XGB", "kind": "information", "label": "$\\beta_{MFM}$", "labelMeasure": "\\beta_{MFM}", "labelMath": "$\\beta_{MFM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "XGB", "target": "beta_proba", "kind": "information", "label": "$\\beta_{proba}$", "labelMeasure": "\\beta_{proba}", "labelMath": "$\\beta_{proba}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_proba", "target": "Threshold", "kind": "reflex", "label": "$\\beta_{proba}$", "labelMeasure": "\\beta_{proba}", "labelMath": "$\\beta_{proba}$", "rad": 0.05, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "f_threshold", "target": "Threshold", "kind": "reflex", "label": "$f_{\\tau}$", "labelMeasure": "f_{\\tau}", "labelMath": "$f_{\\tau}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Threshold", "target": "y_pred", "kind": "reflex", "label": "$\\gamma$", "labelMeasure": "\\gamma", "labelMath": "$\\gamma$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_proba", "target": "ThresholdClustering", "kind": "reflex", "label": "$\\beta_{proba}$", "labelMeasure": "\\beta_{proba}", "labelMath": "$\\beta_{proba}$", "rad": 0.15, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "f_threshold_cluster", "target": "ThresholdClustering", "kind": "reflex", "label": "$f_{\\tau_c}$", "labelMeasure": "f_{\\tau_c}", "labelMath": "$f_{\\tau_c}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "ThresholdClustering", "target": "y_pred_cluster", "kind": "reflex", "label": "$\\gamma^{cluster}$", "labelMeasure": "\\gamma^{cluster}", "labelMath": "$\\gamma^{cluster}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_proba", "target": "ThresholdBruteforce", "kind": "reflex", "label": "$\\beta_{proba}$", "labelMeasure": "\\beta_{proba}", "labelMath": "$\\beta_{proba}$", "rad": -0.15, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "f_threshold_brute", "target": "ThresholdBruteforce", "kind": "reflex", "label": "$f_{\\tau_b}$", "labelMeasure": "f_{\\tau_b}", "labelMath": "$f_{\\tau_b}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "ThresholdBruteforce", "target": "y_pred_brute", "kind": "reflex", "label": "$\\gamma^{brute}$", "labelMeasure": "\\gamma^{brute}", "labelMath": "$\\gamma^{brute}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "y_pred", "target": "Critic_action", "kind": "critic", "label": "$y_{pred}$", "labelMeasure": "y_{pred}", "labelMath": "$y_{pred}$", "rad": 0.1, "labelOffset": [-0.2, 0.25], "sourceGap": null, "targetGap": null}, {"source": "y_pred_cluster", "target": "Critic_action", "kind": "critic", "label": "$y_{pred}^{cluster}$", "labelMeasure": "y_{pred}^{cluster}", "labelMath": "$y_{pred}^{cluster}$", "rad": 0.18, "labelOffset": [-0.2, 0.25], "sourceGap": null, "targetGap": null}, {"source": "y_pred_brute", "target": "Critic_action", "kind": "critic", "label": "$y_{pred}^{brute}$", "labelMeasure": "y_{pred}^{brute}", "labelMath": "$y_{pred}^{brute}$", "rad": -0.18, "labelOffset": [-0.2, -0.25], "sourceGap": null, "targetGap": null}, {"source": "alpha_dataset", "target": "Critic_action", "kind": "supervision", "label": "$\\alpha_{Y,X}^{sup}$", "labelMeasure": "\\alpha_{Y,X}^{sup}", "labelMath": "$\\alpha_{Y,X}^{sup}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Critic_action", "target": "m_gamma", "kind": "critic", "label": "$m_{\\gamma}$", "labelMeasure": "m_{\\gamma}", "labelMath": "$m_{\\gamma}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_dec", "target": "Critic_world", "kind": "critic", "label": "$\\eta'_s{}_{t+1:t+W_p}$", "labelMeasure": "\\eta'_s{}_{t+1:t+W_p}", "labelMath": "$\\eta'_s{}_{t+1:t+W_p}$", "rad": -0.12, "labelOffset": [0.2, 0.3], "sourceGap": null, "targetGap": null}, {"source": "alpha_dataset", "target": "Critic_world", "kind": "supervision", "label": "$\\alpha_{Y,X}^{sup}$", "labelMeasure": "\\alpha_{Y,X}^{sup}", "labelMath": "$\\alpha_{Y,X}^{sup}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Critic_world", "target": "m_wm", "kind": "critic", "label": "$m_{wm}$", "labelMeasure": "m_{wm}", "labelMath": "$m_{wm}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "eta_dec_sim", "target": "Critic_world_sim", "kind": "critic", "label": "$\\eta'_{s,sim}{}_{t+1:t+W_p}$", "labelMeasure": "\\eta'_{s,sim}{}_{t+1:t+W_p}", "labelMath": "$\\eta'_{s,sim}{}_{t+1:t+W_p}$", "rad": -0.12, "labelOffset": [0.2, 0.3], "sourceGap": null, "targetGap": null}, {"source": "alpha_dataset", "target": "Critic_world_sim", "kind": "supervision", "label": "$\\alpha_{Y,X}^{sup}$", "labelMeasure": "\\alpha_{Y,X}^{sup}", "labelMath": "$\\alpha_{Y,X}^{sup}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Critic_world_sim", "target": "m_wm_sim", "kind": "critic", "label": "$m_{wm}^{sim}$", "labelMeasure": "m_{wm}^{sim}", "labelMath": "$m_{wm}^{sim}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "beta_proba", "target": "Critic_xgb", "kind": "critic", "label": "$\\beta_{proba}$", "labelMeasure": "\\beta_{proba}", "labelMath": "$\\beta_{proba}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "alpha_dataset", "target": "Critic_xgb", "kind": "supervision", "label": "$\\alpha_{Y,X}^{sup}$", "labelMeasure": "\\alpha_{Y,X}^{sup}", "labelMath": "$\\alpha_{Y,X}^{sup}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "Critic_xgb", "target": "m_xgb", "kind": "critic", "label": "$m_{XGB}$", "labelMeasure": "m_{XGB}", "labelMath": "$m_{XGB}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "m_gamma", "target": "m", "kind": "critic", "label": "$m_{\\gamma}$", "labelMeasure": "m_{\\gamma}", "labelMath": "$m_{\\gamma}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "m_wm", "target": "m", "kind": "critic", "label": "$m_{wm}$", "labelMeasure": "m_{wm}", "labelMath": "$m_{wm}$", "rad": -0.2, "labelOffset": [0.35, -0.4], "sourceGap": null, "targetGap": null}, {"source": "m_wm_sim", "target": "m", "kind": "critic", "label": "$m_{wm}^{sim}$", "labelMeasure": "m_{wm}^{sim}", "labelMath": "$m_{wm}^{sim}$", "rad": -0.16, "labelOffset": [0.35, -0.35], "sourceGap": null, "targetGap": null}, {"source": "m_xgb", "target": "m", "kind": "critic", "label": "$m_{XGB}$", "labelMeasure": "m_{XGB}", "labelMath": "$m_{XGB}$", "rad": 0.1, "labelOffset": [-0.2, -0.25], "sourceGap": null, "targetGap": null}, {"source": "m", "target": "ScoreBase", "kind": "reflex", "label": "$\\mathcal{B}_{R}$", "labelMeasure": "\\mathcal{B}_{R}", "labelMath": "$\\mathcal{B}_{R}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "ScoreBase", "target": "z_H_R", "kind": "reflex", "label": "$z_{H_R}$", "labelMeasure": "z_{H_R}", "labelMath": "$z_{H_R}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "z_H_R", "target": "ScoreOp", "kind": "reflex", "label": "$\\phi_R$", "labelMeasure": "\\phi_R", "labelMath": "$\\phi_R$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "ScoreOp", "target": "s_H_R", "kind": "reflex", "label": "$s_{H_R}$", "labelMeasure": "s_{H_R}", "labelMath": "$s_{H_R}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "s_H_R", "target": "H", "kind": "reflex", "label": "$s_{H_R}$", "labelMeasure": "s_{H_R}", "labelMath": "$s_{H_R}$", "rad": 0.0, "labelOffset": [0.0, 0.24], "sourceGap": null, "targetGap": null}, {"source": "H", "target": "vartheta_data", "kind": "control", "label": "$H\\mapsto\\vartheta_{data}$", "labelMeasure": "H\\mapsto\\vartheta_{data}", "labelMath": "$H\\mapsto\\vartheta_{data}$", "rad": 0.18, "labelOffset": [0.1, 0.3], "sourceGap": null, "targetGap": null}, {"source": "H", "target": "vartheta_model", "kind": "control", "label": "$H\\mapsto\\vartheta_{model}$", "labelMeasure": "H\\mapsto\\vartheta_{model}", "labelMath": "$H\\mapsto\\vartheta_{model}$", "rad": 0.05, "labelOffset": [0.1, 0.3], "sourceGap": null, "targetGap": null}, {"source": "H", "target": "vartheta_decision", "kind": "control", "label": "$H\\mapsto\\vartheta_{decision}$", "labelMeasure": "H\\mapsto\\vartheta_{decision}", "labelMath": "$H\\mapsto\\vartheta_{decision}$", "rad": -0.18, "labelOffset": [0.1, 0.3], "sourceGap": null, "targetGap": null}, {"source": "vartheta_data", "target": "Preprocess_Cog", "kind": "control", "label": "$\\vartheta_{prep}$", "labelMeasure": "\\vartheta_{prep}", "labelMath": "$\\vartheta_{prep}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_data", "target": "Norm_Cog", "kind": "control", "label": "$\\vartheta_{norm}$", "labelMeasure": "\\vartheta_{norm}", "labelMath": "$\\vartheta_{norm}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "CPD", "kind": "control", "label": "$\\vartheta_{CPD}$", "labelMeasure": "\\vartheta_{CPD}", "labelMath": "$\\vartheta_{CPD}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "VSN", "kind": "control", "label": "$\\vartheta_{VSN}$", "labelMeasure": "\\vartheta_{VSN}", "labelMath": "$\\vartheta_{VSN}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "Enc_Cog", "kind": "control", "label": "$\\vartheta_{Enc}$", "labelMeasure": "\\vartheta_{Enc}", "labelMath": "$\\vartheta_{Enc}$", "rad": -0.12, "labelOffset": [0.28, 0.3], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "Dec_Gen", "kind": "control", "label": "$\\vartheta_{Dec}$", "labelMeasure": "\\vartheta_{Dec}", "labelMath": "$\\vartheta_{Dec}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "Dec_Gen_Sim", "kind": "control", "label": "$\\vartheta_{Dec}^{sim}$", "labelMeasure": "\\vartheta_{Dec}^{sim}", "labelMath": "$\\vartheta_{Dec}^{sim}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "TimeFM", "kind": "control", "label": "$\\vartheta_{FM}$", "labelMeasure": "\\vartheta_{FM}", "labelMath": "$\\vartheta_{FM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "MultiTimeFM", "kind": "control", "label": "$\\vartheta_{MFM}$", "labelMeasure": "\\vartheta_{MFM}", "labelMath": "$\\vartheta_{MFM}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "RegimeEncoder", "kind": "control", "label": "$\\vartheta_{Reg}$", "labelMeasure": "\\vartheta_{Reg}", "labelMath": "$\\vartheta_{Reg}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "Clustering_Pi", "kind": "control", "label": "$\\vartheta_{Clustering}$", "labelMeasure": "\\vartheta_{Clustering}", "labelMath": "$\\vartheta_{Clustering}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "Similarity_R", "kind": "control", "label": "$\\vartheta_{Similarity}$", "labelMeasure": "\\vartheta_{Similarity}", "labelMath": "$\\vartheta_{Similarity}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "Memory_Cog", "kind": "control", "label": "$\\vartheta_{Memory}$", "labelMeasure": "\\vartheta_{Memory}", "labelMath": "$\\vartheta_{Memory}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "CrossAttention", "kind": "control", "label": "$\\vartheta_{CrossAtt}$", "labelMeasure": "\\vartheta_{CrossAtt}", "labelMath": "$\\vartheta_{CrossAtt}$", "rad": -0.18, "labelOffset": [-0.3, 0.34], "sourceGap": null, "targetGap": null}, {"source": "vartheta_model", "target": "XGB", "kind": "control", "label": "$\\vartheta_{XGB}$", "labelMeasure": "\\vartheta_{XGB}", "labelMath": "$\\vartheta_{XGB}$", "rad": -0.16, "labelOffset": [0.3, 0.28], "sourceGap": null, "targetGap": null}, {"source": "vartheta_decision", "target": "Threshold", "kind": "control", "label": "$\\vartheta_{\\tau}$", "labelMeasure": "\\vartheta_{\\tau}", "labelMath": "$\\vartheta_{\\tau}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_decision", "target": "ThresholdClustering", "kind": "control", "label": "$\\vartheta_{\\tau_c}$", "labelMeasure": "\\vartheta_{\\tau_c}", "labelMath": "$\\vartheta_{\\tau_c}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}, {"source": "vartheta_decision", "target": "ThresholdBruteforce", "kind": "control", "label": "$\\vartheta_{\\tau_b}$", "labelMeasure": "\\vartheta_{\\tau_b}", "labelMath": "$\\vartheta_{\\tau_b}$", "rad": 0.0, "labelOffset": [0, 0], "sourceGap": null, "targetGap": null}], "nodeNotes": {"eta_strategy": "eta_strategy", "f_dataset": "f_dataset", "DatasetCreation": "DatasetCreation", "gamma_dataset": "gamma_dataset", "M_dataset_prior": "M_dataset_prior", "Append_M_y": "Append_M_y", "M_dataset": "M_dataset", "Read_M_y": "Read_M_y", "eta_bar_dataset": "eta_bar_dataset", "Per_Dataset": "Per_Dataset", "alpha_dataset": "supervision uniquement: contient X et Y, interdit aux modules decisionnels", "eta_market": "eta_market", "DataGathering": "DataGathering", "alpha_X": "alpha_X", "f_preprocess": "f_preprocess", "Preprocess_Cog": "Preprocess_Cog", "gamma_preprocess": "gamma_preprocess", "M_preprocess_prior": "M_preprocess_prior", "Append_M_preprocess": "Append_M_preprocess", "M_preprocess": "M_preprocess", "Read_M_preprocess": "Read_M_preprocess", "eta_bar_preprocess": "eta_bar_preprocess", "Per_Preprocess": "Per_Preprocess", "alpha_prepared": "alpha_prepared", "f_norm": "f_norm", "Norm_Cog": "Norm_Cog", "gamma_norm": "gamma_norm", "M_norm_prior": "M_norm_prior", "Append_M_norm": "Append_M_norm", "M_norm": "M_norm", "Read_M_norm": "Read_M_norm", "eta_bar_norm": "eta_bar_norm", "Per_Norm": "Per_Norm", "alpha_X_context": "contexte disponible au temps t, sans fuite temporelle", "alpha_Y_context": "contexte cible Y genere par f_eta_A et disponible au temps t", "CPD": "CPD", "beta_CPD": "beta_CPD", "VSN": "VSN", "beta_VSN": "beta_VSN", "Enc_Cog": "Enc_Cog", "beta_enc": "beta_enc", "Dec_Gen": "Dec_Gen", "S_dec": "S_dec", "eta_dec": "eta_dec", "Dec_Gen_Sim": "decodeur generatif enrichi par la memoire contextualisee", "S_dec_sim": "S_dec_sim", "eta_dec_sim": "projection phenomenale issue de beta_enc et beta_sim", "TimeFM": "TimeFM", "beta_FM": "beta_FM", "MultiTimeFM": "MultiTimeFM", "beta_MFM": "beta_MFM", "RegimeEncoder": "RegimeEncoder", "beta_regime": "beta_regime", "Gen_Regime": "Gen_Regime", "S_regime": "S_regime", "eta_regime": "eta_regime", "Union_STM": "Union_STM", "eta_bar_regime": "eta_bar_regime", "M_reg_STM": "memoire courte des regimes recents", "STM_append": "STM_append", "M_reg_STM_filled": "M_reg_STM_filled", "STM_read": "STM_read", "eta_bar_STM": "eta_bar_STM", "Per_STM": "Per_STM", "alpha_STM": "alpha_STM", "M_reg_LTM": "memoire longue des episodes historiques", "LTM_append": "LTM_append", "M_reg_LTM_filled": "M_reg_LTM_filled", "LTM_read": "LTM_read", "eta_bar_LTM": "eta_bar_LTM", "Per_LTM": "Per_LTM", "alpha_LTM": "alpha_LTM", "Clustering_Pi": "apprend les regimes clusters depuis la LTM", "beta_cluster": "beta_cluster", "Gen_Cluster": "Gen_Cluster", "S_cluster": "S_cluster", "eta_cluster": "eta_cluster", "Union_Learned": "Union_Learned", "eta_bar_learned": "eta_bar_learned", "M_reg_learned": "memoire des regimes appris par clustering", "Learned_append": "Learned_append", "M_reg_learned_filled": "M_reg_learned_filled", "Learned_read": "Learned_read", "eta_bar_learned_memory": "eta_bar_learned_memory", "Per_Learned": "Per_Learned", "alpha_learned": "alpha_learned", "Similarity_R": "assigne le regime courant STM au regime appris le plus similaire", "gamma_cluster": "assignation reflexe du regime courant a un cluster", "Memory_Cog": "projection cognitive de la memoire lue en cle/valeur attentionnelle", "beta_memory": "beta_memory", "CrossAttention": "lecture attentionnelle: Q=beta_enc, K,V=beta_memory", "beta_sim": "memoire contextualisee par le present latent", "XGB": "XGB", "beta_proba": "etat beta probabiliste produit par l'automatisme XGB", "f_threshold": "f_threshold", "Threshold": "Threshold", "y_pred": "y_pred", "f_threshold_cluster": "f_threshold_cluster", "ThresholdClustering": "ThresholdClustering", "y_pred_cluster": "y_pred_cluster", "f_threshold_brute": "f_threshold_brute", "ThresholdBruteforce": "ThresholdBruteforce", "y_pred_brute": "y_pred_brute", "Critic_action": "Critic_action", "m_gamma": "m_gamma", "Critic_world": "Critic_world", "m_wm": "m_wm", "Critic_world_sim": "Critic_world_sim", "m_wm_sim": "m_wm_sim", "Critic_xgb": "Critic_xgb", "m_xgb": "m_xgb", "m": "m", "ScoreBase": "ScoreBase", "z_H_R": "z_H_R", "ScoreOp": "ScoreOp", "s_H_R": "s_H_R", "H": "H", "vartheta_data": "controle homeostatique des reflexes de donnees", "vartheta_model": "controle homeostatique des modules cognitifs et automatismes", "vartheta_decision": "controle homeostatique des seuils et decisions"}, "canvas": {"width": 3837.6000000000004, "height": 4888.0, "minX": -36.2, "maxY": 17.2, "unit": 52}}</script>
+  <script id="graph-style" type="application/json">{"node_palettes": {"phenomenal": {"face": "#EEF2FF", "edge": "#4338CA"}, "perception": {"face": "#ECFDF5", "edge": "#047857"}, "memory": {"face": "#F0FDFA", "edge": "#0F766E"}, "cognition": {"face": "#F5F3FF", "edge": "#7C3AED"}, "automatisme": {"face": "#EFF6FF", "edge": "#1D4ED8"}, "action": {"face": "#FFF7ED", "edge": "#C2410C"}, "supervision": {"face": "#FEF2F2", "edge": "#B91C1C"}, "STM": {"face": "#F0FDFA", "edge": "#0F766E"}, "LTM": {"face": "#ECFEFF", "edge": "#0891B2"}, "critique": {"face": "#FEE2E2", "edge": "#991B1B"}, "reflexe": {"face": "#FFFBEB", "edge": "#B45309"}, "homeostasie": {"face": "#F3F4F6", "edge": "#111827"}, "state": {"face": "#F8FAFC", "edge": "#475569"}}, "edge_styles": {"information": {"color": "#1F2937", "linestyle": "-", "linewidth": 1.45, "arrowsize": 15}, "perception": {"color": "#047857", "linestyle": "-", "linewidth": 1.45, "arrowsize": 15}, "supervision": {"color": "#111827", "linestyle": ":", "linewidth": 2.05, "arrowsize": 17}, "critic": {"color": "#7F1D1D", "linestyle": "--", "linewidth": 1.45, "arrowsize": 15}, "reflex": {"color": "#92400E", "linestyle": "-.", "linewidth": 1.45, "arrowsize": 15}, "control": {"color": "#6B7280", "linestyle": "--", "linewidth": 1.35, "arrowsize": 14}, "generation": {"color": "#5B21B6", "linestyle": "--", "linewidth": 1.4, "arrowsize": 14}, "stm": {"color": "#0F766E", "linestyle": "-", "linewidth": 1.55, "arrowsize": 15}, "ltm": {"color": "#0891B2", "linestyle": "-", "linewidth": 1.55, "arrowsize": 15}, "action": {"color": "#C2410C", "linestyle": "-", "linewidth": 1.65, "arrowsize": 16}}, "register_legend_items": [], "register_display_names": {"phenomenal": "phenomenal", "perception": "perception", "memory": "memory", "STM": "short-term memory", "LTM": "long-term memory", "cognition": "cognition", "automatisme": "automatisme", "action": "action", "critique": "critique", "reflexe": "reflexe", "state": "state", "homeostasie": "homeostasie"}, "show_edge_labels": false, "show_register_legend": false, "show_homeostasie": true, "show_critique": true, "font_family": "serif", "font_size_node": 18, "font_size_edge": 11, "font_size_note": 10, "font_size_phrase": 12, "font_size_legend": 11, "font_size_legend_title": 13, "note_fontstyle": "italic", "phrase_fontstyle": "italic", "legend_title_weight": "bold", "state_circle_radius": 0.6, "state_linewidth": 2.0, "box_pad": 0.2, "box_radius": 0.1, "box_linewidth": 1.75, "factor_width": 2.0, "factor_height": 1.5, "factor_linewidth": 1.35, "arrow_block_gap": 0.0, "label_bbox_alpha": 0.9, "label_bbox_pad": 1.7, "node_note_offset_y": -0.58, "node_note_gap": 0.18, "legend_x": 12.6, "legend_y": 6.9, "legend_line_height": 0.72, "legend_box_pad": 0.3, "legend_auto_position": true, "legend_x_gap": 1.2, "color_ink": "#111827", "color_note": "#6B7280", "color_phrase": "#374151", "color_label_bbox": "#FFFFFF", "color_label_edge": "none", "color_legend_title": "#111827", "color_background": "#FFFFFF", "base_figsize": [28, 18], "layout_spacing_ratio": 2.0, "dpi": 300, "show_node_notes": true, "legend_width": 4.5, "x_margin_left": 2.2, "x_margin_right": 1.6, "y_margin_bottom": 1.2, "y_margin_top": 1.2, "default_node_palette": {"face": "#F9FAFB", "edge": "#374151"}}</script>
+  <script>
+const graph = JSON.parse(document.getElementById("graph-data").textContent);
+const style = JSON.parse(document.getElementById("graph-style").textContent);
+const svg = document.getElementById("graph");
+const viewport = document.getElementById("viewport");
+const statusNode = document.getElementById("status");
+const thresholdInput = document.getElementById("mealy-threshold");
+const thresholdOutput = document.getElementById("thresholdOutput");
+const unit = graph.canvas.unit;
+const initialPositions = JSON.parse(JSON.stringify(graph.positions));
+const nodeState = new Map();
+const edgeState = [];
+const baseSvgWidth = Math.max(900, graph.canvas.width);
+const baseSvgHeight = Math.max(650, graph.canvas.height);
+const graphZoom = {
+  value: 1,
+  min: 0.35,
+  max: 2.8,
+  step: 1.18,
+};
+const visibleRegisters = {
+  homeostasie: true,
+  critique: true,
+};
+
+svg.setAttribute("width", baseSvgWidth);
+svg.setAttribute("height", baseSvgHeight);
+svg.setAttribute("viewBox", `0 0 ${graph.canvas.width} ${graph.canvas.height}`);
+
+function updateRangeProgress(input, output) {
+  if (!input) return;
+  const min = Number(input.min);
+  const max = Number(input.max);
+  const value = Number(input.value);
+  const progress = ((value - min) / (max - min)) * 100;
+  input.style.setProperty("--range-progress", `${progress}%`);
+  if (output) output.textContent = input.value;
+}
+
+function applyTheme(theme) {
+  const nextTheme = theme === "dark" ? "dark" : "light";
+  document.body.dataset.theme = nextTheme;
+  const button = document.getElementById("themeToggle");
+  if (!button) return;
+  const isDark = nextTheme === "dark";
+  button.textContent = isDark ? "☀" : "☾";
+  button.title = isDark ? "Enable light mode" : "Enable dark mode";
+  button.setAttribute("aria-label", button.title);
+  button.setAttribute("aria-pressed", String(isDark));
+  localStorage.setItem("mealy-ui-theme", nextTheme);
+}
+
+async function setGraphFullscreen(enabled, options = {}) {
+  if (enabled && document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+  const button = document.getElementById("fullscreenGraph");
+  document.body.classList.toggle("is-fullscreen-graph", enabled);
+  if (button) {
+    button.classList.toggle("is-active", enabled);
+    button.setAttribute("aria-pressed", String(enabled));
+    button.setAttribute("aria-label", enabled ? "Exit graph fullscreen" : "Enter graph fullscreen");
+    button.title = enabled ? "Exit fullscreen (q)" : "Graph fullscreen";
+  }
+
+  if (!options.skipNative) {
+    try {
+      if (enabled && document.fullscreenEnabled && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else if (!enabled && document.fullscreenElement) {
+        await document.exitFullscreen();
+      }
+    } catch (_error) {
+      // App-level fullscreen still works when browser fullscreen is unavailable.
+    }
+  }
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function setSvgDisplaySize() {
+  svg.setAttribute("width", baseSvgWidth * graphZoom.value);
+  svg.setAttribute("height", baseSvgHeight * graphZoom.value);
+}
+
+function graphZoomOrigin() {
+  if (!viewport) return null;
+  return {
+    x: viewport.clientWidth / 2,
+    y: viewport.clientHeight / 2,
+  };
+}
+
+function updateZoomControls() {
+  const zoomLevel = document.getElementById("zoomLevel");
+  const zoomOut = document.getElementById("zoomOutGraph");
+  const zoomIn = document.getElementById("zoomInGraph");
+  const rounded = Math.round(graphZoom.value * 100);
+  if (zoomLevel) zoomLevel.textContent = `${rounded}%`;
+  if (zoomOut) zoomOut.disabled = graphZoom.value <= graphZoom.min + 0.001;
+  if (zoomIn) zoomIn.disabled = graphZoom.value >= graphZoom.max - 0.001;
+}
+
+function applyGraphZoom(nextZoom, origin = graphZoomOrigin()) {
+  if (!viewport) return;
+  const previousZoom = graphZoom.value;
+  const clamped = clamp(nextZoom, graphZoom.min, graphZoom.max);
+  if (Math.abs(clamped - previousZoom) < 0.001) return;
+
+  const anchor = origin || graphZoomOrigin();
+  const anchorGraphX = anchor ? (viewport.scrollLeft + anchor.x) / previousZoom : 0;
+  const anchorGraphY = anchor ? (viewport.scrollTop + anchor.y) / previousZoom : 0;
+  graphZoom.value = clamped;
+  setSvgDisplaySize();
+  if (anchor) {
+    viewport.scrollLeft = Math.max(0, anchorGraphX * clamped - anchor.x);
+    viewport.scrollTop = Math.max(0, anchorGraphY * clamped - anchor.y);
+  }
+  updateZoomControls();
+}
+
+function bindGraphZoomControls() {
+  setSvgDisplaySize();
+  updateZoomControls();
+
+  document.getElementById("zoomOutGraph")?.addEventListener("click", () => {
+    applyGraphZoom(graphZoom.value / graphZoom.step);
+  });
+
+  document.getElementById("zoomInGraph")?.addEventListener("click", () => {
+    applyGraphZoom(graphZoom.value * graphZoom.step);
+  });
+
+  document.getElementById("zoomResetGraph")?.addEventListener("click", () => {
+    applyGraphZoom(1);
+  });
+
+  viewport?.addEventListener("wheel", (event) => {
+    if (!event.ctrlKey && !event.metaKey) return;
+    event.preventDefault();
+    const rect = viewport.getBoundingClientRect();
+    const origin = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+    const factor = Math.exp(-event.deltaY * 0.0012);
+    applyGraphZoom(graphZoom.value * factor, origin);
+  }, { passive: false });
+}
+
+function bindInterfaceControls() {
+  updateRangeProgress(thresholdInput, thresholdOutput);
+  bindGraphZoomControls();
+  applyTheme(localStorage.getItem("mealy-ui-theme") || "light");
+
+  document.getElementById("themeToggle")?.addEventListener("click", () => {
+    applyTheme(document.body.dataset.theme === "dark" ? "light" : "dark");
+  });
+
+  document.getElementById("fullscreenGraph")?.addEventListener("click", () => {
+    setGraphFullscreen(!document.body.classList.contains("is-fullscreen-graph"));
+  });
+
+  document.addEventListener("keydown", (event) => {
+    const target = event.target;
+    const isTyping = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement;
+    if (isTyping) return;
+    if (event.key.toLowerCase() === "q" && document.body.classList.contains("is-fullscreen-graph")) {
+      event.preventDefault();
+      setGraphFullscreen(false);
+    }
+  });
+
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && document.body.classList.contains("is-fullscreen-graph")) {
+      setGraphFullscreen(false, { skipNative: true });
+    }
+  });
+}
+
+bindInterfaceControls();
+
+function svgEl(tag, attrs = {}) {
+  const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  Object.entries(attrs).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) el.setAttribute(key, value);
+  });
+  return el;
+}
+
+function htmlEl(tag, attrs = {}) {
+  const el = document.createElement(tag);
+  Object.entries(attrs).forEach(([key, value]) => {
+    if (key === "class") el.className = value;
+    else if (value !== undefined && value !== null) el.setAttribute(key, value);
+  });
+  return el;
+}
+
+function textWidth(text, fontSize) {
+  return Math.max(0, String(text).length * fontSize * 0.48);
+}
+
+function mathLabelBox(metrics, node) {
+  const fontSize = node.blockStyle === "phrase" ? style.font_size_phrase : style.font_size_node;
+  if (metrics.shape === "circle") {
+    return {
+      width: Math.max(metrics.r * 2.15, textWidth(node.labelMeasure, fontSize) + 14),
+      height: metrics.r * 1.35,
+      fontSize,
+    };
+  }
+  if (metrics.shape === "factor" || metrics.shape === "rect") {
+    return {
+      width: metrics.width,
+      height: metrics.height,
+      fontSize,
+    };
+  }
+  return {
+    width: metrics.width,
+    height: metrics.height,
+    fontSize,
+  };
+}
+
+function makeMathLabel(latex, box, className = "math-label-box") {
+  const foreignObject = svgEl("foreignObject", {
+    class: "math-label-foreign",
+    x: -box.width / 2,
+    y: -box.height / 2,
+    width: box.width,
+    height: box.height,
+  });
+  const label = htmlEl("div", { class: className });
+  label.style.fontSize = `${box.fontSize}px`;
+  label.textContent = latex;
+  foreignObject.appendChild(label);
+  return foreignObject;
+}
+
+function nodeMetrics(node) {
+  const fontSize = style.font_size_node;
+  if (node.blockStyle === "circle") {
+    return { shape: "circle", r: style.state_circle_radius * unit };
+  }
+  if (node.blockStyle === "factor") {
+    return {
+      shape: "factor",
+      width: style.factor_width * unit,
+      height: style.factor_height * unit,
+    };
+  }
+  if (node.blockStyle === "phrase") {
+    return {
+      shape: "phrase",
+      width: Math.max(textWidth(node.labelMeasure, style.font_size_phrase), 20),
+      height: style.font_size_phrase * 1.6,
+    };
+  }
+  return {
+    shape: "rect",
+    width: Math.max(textWidth(node.labelMeasure, fontSize) + style.box_pad * unit * 2, 2.0 * unit),
+    height: Math.max(fontSize * 2.0, 0.92 * unit),
+  };
+}
+
+function factorPath(width, height) {
+  const left = -width / 2;
+  const right = width / 2;
+  const top = -height / 2;
+  const bottom = height / 2;
+  const mid = left + width * 0.70;
+  return [
+    `M ${left} ${bottom}`,
+    `L ${mid} ${bottom}`,
+    `Q ${right} ${bottom} ${right} 0`,
+    `Q ${right} ${top} ${mid} ${top}`,
+    `L ${left} ${top}`,
+    "Z",
+  ].join(" ");
+}
+
+function linestyle(styleName) {
+  if (styleName === "--") return "8 6";
+  if (styleName === ":") return "2 5";
+  if (styleName === "-.") return "8 5 2 5";
+  return "";
+}
+
+function markerId(kind) {
+  return `arrow-${kind}`;
+}
+
+function createMarkers(defs) {
+  Object.entries(style.edge_styles).forEach(([kind, edge]) => {
+    const marker = svgEl("marker", {
+      id: markerId(kind),
+      viewBox: "0 0 10 10",
+      refX: 9,
+      refY: 5,
+      markerWidth: Math.max(5, edge.arrowsize * 0.52),
+      markerHeight: Math.max(5, edge.arrowsize * 0.52),
+      orient: "auto-start-reverse",
+    });
+    marker.appendChild(svgEl("path", { d: "M 0 0 L 10 5 L 0 10 z", fill: edge.color }));
+    defs.appendChild(marker);
+  });
+}
+
+function setNodeTransform(node) {
+  node.group.setAttribute("transform", `translate(${node.x} ${node.y})`);
+}
+
+function makeNode(name, node, position, nodeLayer) {
+  const metrics = nodeMetrics(node);
+  const group = svgEl("g", { class: "node", "data-node": name });
+  group.appendChild(svgEl("title"));
+  group.querySelector("title").textContent = `${name} | ${node.label}`;
+
+  if (metrics.shape === "circle") {
+    group.appendChild(svgEl("circle", {
+      r: metrics.r,
+      fill: node.face,
+      stroke: node.edge,
+      "stroke-width": style.state_linewidth,
+    }));
+  } else if (metrics.shape === "factor") {
+    group.appendChild(svgEl("path", {
+      d: factorPath(metrics.width, metrics.height),
+      fill: node.face,
+      stroke: node.edge,
+      "stroke-width": style.factor_linewidth,
+    }));
+  } else if (metrics.shape !== "phrase") {
+    group.appendChild(svgEl("rect", {
+      x: -metrics.width / 2,
+      y: -metrics.height / 2,
+      width: metrics.width,
+      height: metrics.height,
+      rx: style.box_radius * unit,
+      ry: style.box_radius * unit,
+      fill: node.face,
+      stroke: node.edge,
+      "stroke-width": style.box_linewidth,
+    }));
+  }
+
+  const labelBox = mathLabelBox(metrics, node);
+  const label = makeMathLabel(node.labelMath, labelBox);
+  if (metrics.shape === "phrase") {
+    label.firstChild.style.fontStyle = style.phrase_fontstyle;
+    label.firstChild.style.color = style.color_phrase;
+  }
+  group.appendChild(label);
+
+  if (style.show_node_notes && graph.nodeNotes[name]) {
+    const note = svgEl("text", { class: "node-note" });
+    let noteY = style.node_note_offset_y * -unit;
+    if (metrics.shape === "circle") {
+      noteY = metrics.r + style.node_note_gap * unit;
+    } else if (metrics.shape === "factor") {
+      noteY = metrics.height / 2 + style.node_note_gap * unit;
+    } else if (metrics.shape === "rect") {
+      noteY = metrics.height / 2 + style.node_note_gap * unit;
+    }
+    note.setAttribute("y", noteY);
+    note.textContent = graph.nodeNotes[name];
+    group.appendChild(note);
+  }
+
+  const state = {
+    name,
+    group,
+    metrics,
+    x: position.x,
+    y: position.y,
+  };
+  setNodeTransform(state);
+  nodeLayer.appendChild(group);
+  nodeState.set(name, state);
+  enableDrag(state);
+}
+
+function boundaryPoint(node, target, gap) {
+  const dx = target.x - node.x;
+  const dy = target.y - node.y;
+  const length = Math.hypot(dx, dy) || 1;
+  const ux = dx / length;
+  const uy = dy / length;
+  const extra = (gap ?? style.arrow_block_gap) * unit;
+  const m = node.metrics;
+
+  if (m.shape === "circle") {
+    return { x: node.x + ux * (m.r + extra), y: node.y + uy * (m.r + extra) };
+  }
+
+  const halfW = (m.width || 0) / 2;
+  const halfH = (m.height || 0) / 2;
+  const tx = ux === 0 ? Infinity : halfW / Math.abs(ux);
+  const ty = uy === 0 ? Infinity : halfH / Math.abs(uy);
+  const distance = Math.min(tx, ty) + extra;
+  return { x: node.x + ux * distance, y: node.y + uy * distance };
+}
+
+function edgePath(source, target, rad, sourceGap, targetGap) {
+  const start = boundaryPoint(source, target, sourceGap);
+  const end = boundaryPoint(target, source, targetGap);
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const length = Math.hypot(dx, dy) || 1;
+  if (!rad) return { d: `M ${start.x} ${start.y} L ${end.x} ${end.y}`, mid: { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 } };
+  const mx = (start.x + end.x) / 2;
+  const my = (start.y + end.y) / 2;
+  const cx = mx + (-dy / length) * rad * length;
+  const cy = my + (dx / length) * rad * length;
+  return { d: `M ${start.x} ${start.y} Q ${cx} ${cy} ${end.x} ${end.y}`, mid: { x: cx, y: cy } };
+}
+
+function makeEdges(edgeLayer, labelLayer) {
+  graph.edges.forEach((edge) => {
+    const edgeStyle = style.edge_styles[edge.kind] || style.edge_styles.information;
+    const markerKind = style.edge_styles[edge.kind] ? edge.kind : "information";
+    const path = svgEl("path", {
+      class: "edge-path",
+      stroke: edgeStyle.color,
+      "stroke-width": edgeStyle.linewidth,
+      "stroke-dasharray": linestyle(edgeStyle.linestyle),
+      "marker-end": `url(#${markerId(markerKind)})`,
+    });
+    edgeLayer.appendChild(path);
+
+    let label = null;
+    let labelBox = null;
+    if (style.show_edge_labels && edge.labelMeasure) {
+      labelBox = {
+        width: Math.max(textWidth(edge.labelMeasure, style.font_size_edge) + 22, 54),
+        height: style.font_size_edge * 2.2,
+        fontSize: style.font_size_edge,
+      };
+      label = makeMathLabel(edge.labelMath, labelBox);
+      label.firstChild.style.color = edgeStyle.color;
+      labelLayer.appendChild(label);
+    }
+
+    edgeState.push({ edge, path, label, labelBox });
+  });
+}
+
+function updateEdges() {
+  edgeState.forEach((item) => {
+    const source = nodeState.get(item.edge.source);
+    const target = nodeState.get(item.edge.target);
+    if (!source || !target) return;
+    const geometry = edgePath(source, target, item.edge.rad, item.edge.sourceGap, item.edge.targetGap);
+    item.path.setAttribute("d", geometry.d);
+    if (item.label) {
+      const offset = item.edge.labelOffset || [0, 0];
+      item.label.setAttribute("x", geometry.mid.x + offset[0] * unit - item.labelBox.width / 2);
+      item.label.setAttribute("y", geometry.mid.y - offset[1] * unit - item.labelBox.height / 2);
+    }
+  });
+}
+
+function isRegisterVisible(register) {
+  if (register === "homeostasie") return visibleRegisters.homeostasie;
+  if (register === "critique") return visibleRegisters.critique;
+  return true;
+}
+
+function isEdgeVisible(edge) {
+  const sourceNode = graph.nodes[edge.source];
+  const targetNode = graph.nodes[edge.target];
+  if (edge.kind === "control" && !visibleRegisters.homeostasie) return false;
+  if (edge.kind === "critic" && !visibleRegisters.critique) return false;
+  return (
+    (!sourceNode || isRegisterVisible(sourceNode.register)) &&
+    (!targetNode || isRegisterVisible(targetNode.register))
+  );
+}
+
+function applyVisibility() {
+  nodeState.forEach((node, name) => {
+    const nodeDef = graph.nodes[name];
+    node.group.style.display = isRegisterVisible(nodeDef.register) ? "" : "none";
+  });
+  edgeState.forEach((item) => {
+    const display = isEdgeVisible(item.edge) ? "" : "none";
+    item.path.style.display = display;
+    if (item.label) item.label.style.display = display;
+  });
+}
+
+function svgPoint(event) {
+  const point = new DOMPoint(event.clientX, event.clientY);
+  return point.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+let active = null;
+
+function enableDrag(node) {
+  node.group.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    const p = svgPoint(event);
+    active = { node, dx: node.x - p.x, dy: node.y - p.y };
+    node.group.classList.add("dragging");
+    node.group.setPointerCapture(event.pointerId);
+  });
+}
+
+svg.addEventListener("pointermove", (event) => {
+  if (!active) return;
+  const p = svgPoint(event);
+  active.node.x = p.x + active.dx;
+  active.node.y = p.y + active.dy;
+  setNodeTransform(active.node);
+  updateEdges();
+});
+
+svg.addEventListener("pointerup", () => {
+  if (!active) return;
+  active.node.group.classList.remove("dragging");
+  active = null;
+});
+
+svg.addEventListener("pointercancel", () => {
+  if (!active) return;
+  active.node.group.classList.remove("dragging");
+  active = null;
+});
+
+function exportPositions() {
+  const positions = {};
+  nodeState.forEach((node, name) => {
+    const x = node.x / unit + graph.canvas.minX;
+    const y = graph.canvas.maxY - node.y / unit;
+    const ratio = style.layout_spacing_ratio || 1;
+    positions[name] = [Number((x / ratio).toFixed(3)), Number((y / ratio).toFixed(3))];
+  });
+  return positions;
+}
+
+function currentBasePosition(name) {
+  const node = nodeState.get(name);
+  if (node) {
+    const ratio = style.layout_spacing_ratio || 1;
+    const scaledX = node.x / unit + graph.canvas.minX;
+    const scaledY = graph.canvas.maxY - node.y / unit;
+    return { x: scaledX / ratio, y: scaledY / ratio };
+  }
+  const fallback = graph.basePositions ? graph.basePositions[name] : null;
+  if (!fallback) return null;
+  return { x: fallback.x, y: fallback.y };
+}
+
+function formatPythonNumber(value) {
+  const rounded = Number(value.toFixed(3));
+  const clean = Object.is(rounded, -0) ? 0 : rounded;
+  if (Number.isInteger(clean)) return clean.toFixed(1);
+  return clean.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function formatBasePosBlock() {
+  const entries = Object.keys(graph.basePositions || graph.positions)
+    .map((name) => [name, currentBasePosition(name)])
+    .filter((entry) => entry[1]);
+  const lines = ["    base_pos = {"];
+
+  entries.forEach(([name, position]) => {
+    lines.push(
+      `        "${name}": (${formatPythonNumber(position.x)}, ${formatPythonNumber(position.y)}),`
+    );
+  });
+
+  lines.push("    }");
+  return lines.join("\n");
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (_error) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+    let copied = false;
+    try {
+      copied = document.execCommand("copy");
+    } finally {
+      document.body.removeChild(textarea);
+    }
+    return copied;
+  }
+}
+
+function focusInitialView() {
+  const viewport = document.getElementById("viewport");
+  const nodes = Array.from(nodeState.values());
+  if (!nodes.length) return;
+  const topLimit = Math.min(...nodes.map((node) => node.y)) + 260;
+  const topNodes = nodes.filter((node) => node.y <= topLimit);
+  const focusNodes = topNodes.length ? topNodes : nodes;
+  const minX = Math.min(...focusNodes.map((node) => node.x));
+  const minY = Math.min(...focusNodes.map((node) => node.y));
+  viewport.scrollLeft = Math.max(0, minX - 140);
+  viewport.scrollTop = Math.max(0, minY - 90);
+}
+
+document.getElementById("reset").addEventListener("click", () => {
+  nodeState.forEach((node, name) => {
+    node.x = initialPositions[name].x;
+    node.y = initialPositions[name].y;
+    setNodeTransform(node);
+  });
+  updateEdges();
+  statusNode.textContent = "";
+});
+
+document.getElementById("copy").addEventListener("click", async () => {
+  const text = formatBasePosBlock();
+  const copied = await copyText(text);
+  statusNode.textContent = copied
+    ? "base_pos copied"
+    : "copy blocked by browser";
+});
+
+document.getElementById("toggle-homeostasie").addEventListener("change", (event) => {
+  visibleRegisters.homeostasie = event.target.checked;
+  applyVisibility();
+});
+
+document.getElementById("toggle-critic").addEventListener("change", (event) => {
+  visibleRegisters.critique = event.target.checked;
+  applyVisibility();
+});
+
+function typesetMathLabels() {
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    window.MathJax.typesetPromise([svg]).catch((error) => {
+      console.warn("MathJax rendering failed", error);
+    });
+  }
+}
+
+const defs = svgEl("defs");
+createMarkers(defs);
+svg.appendChild(defs);
+const edgeLayer = svgEl("g", { id: "edges" });
+const labelLayer = svgEl("g", { id: "edge-labels" });
+const nodeLayer = svgEl("g", { id: "nodes" });
+svg.appendChild(edgeLayer);
+svg.appendChild(labelLayer);
+svg.appendChild(nodeLayer);
+
+makeEdges(edgeLayer, labelLayer);
+Object.entries(graph.nodes).forEach(([name, node]) => makeNode(name, node, graph.positions[name], nodeLayer));
+updateEdges();
+applyVisibility();
+focusInitialView();
+window.addEventListener("load", typesetMathLabels);
+  </script>
+
+  <script id="mealy-config" type="application/json">{"datasetRoute": ["eta_strategy", "f_dataset", "DatasetCreation", "gamma_dataset", "Append_M_y", "M_dataset", "Read_M_y", "eta_bar_dataset", "Per_Dataset", "alpha_dataset"], "learnRoute": ["eta_market", "DataGathering", "alpha_X", "Preprocess_Cog", "gamma_preprocess", "Append_M_preprocess", "M_preprocess", "Read_M_preprocess", "eta_bar_preprocess", "Per_Preprocess", "alpha_prepared", "Norm_Cog", "gamma_norm", "Append_M_norm", "M_norm", "Read_M_norm", "eta_bar_norm", "Per_Norm", "alpha_X_context"], "cognitiveRoutes": [{"name": "cpd", "suffix": "C", "route": ["alpha_X_context", "CPD", "beta_CPD"]}, {"name": "vsn", "suffix": "V", "route": ["alpha_X_context", "VSN", "beta_VSN"]}, {"name": "encoder", "suffix": "E", "route": ["alpha_X_context", "Enc_Cog", "beta_enc"]}, {"name": "world", "suffix": "W", "route": ["alpha_X_context", "Enc_Cog", "beta_enc", "Dec_Gen", "eta_dec", "Critic_world", "m_wm", "m", "ScoreBase", "z_H_R", "ScoreOp", "s_H_R", "H"]}, {"name": "timefm", "suffix": "F", "route": ["eta_strategy", "f_dataset", "DatasetCreation", "gamma_dataset", "Append_M_y", "M_dataset", "Read_M_y", "eta_bar_dataset", "Per_Dataset", "alpha_Y_context", "TimeFM", "beta_FM"]}, {"name": "multitimefm", "suffix": "MF", "route": ["alpha_X_context", "MultiTimeFM", "beta_MFM"]}, {"name": "regime_memory", "suffix": "M", "route": ["alpha_X_context", "RegimeEncoder", "beta_regime", "Gen_Regime", "eta_regime", "LTM_append", "M_reg_LTM_filled", "LTM_read", "eta_bar_LTM", "Per_LTM", "alpha_LTM", "Memory_Cog", "beta_memory", "CrossAttention", "beta_sim"]}, {"name": "cluster_pi", "suffix": "PI", "route": ["alpha_X_context", "RegimeEncoder", "beta_regime", "Gen_Regime", "eta_regime", "LTM_append", "M_reg_LTM_filled", "LTM_read", "eta_bar_LTM", "Per_LTM", "alpha_LTM", "Clustering_Pi", "beta_cluster", "Gen_Cluster", "eta_cluster", "Union_Learned", "eta_bar_learned", "Learned_append", "M_reg_learned_filled", "Learned_read", "eta_bar_learned_memory", "Per_Learned", "alpha_learned", "Similarity_R"]}, {"name": "similarity_regime", "suffix": "SR", "route": ["alpha_X_context", "RegimeEncoder", "beta_regime", "Gen_Regime", "eta_regime", "Union_STM", "eta_bar_regime", "STM_append", "M_reg_STM_filled", "STM_read", "eta_bar_STM", "Per_STM", "alpha_STM", "Similarity_R"]}], "similarityOutputRoute": ["Similarity_R", "gamma_cluster"], "xgbInputRoutes": [{"input": "alpha_X_context", "name": "xgb_alpha", "suffix": "XA", "route": ["alpha_X_context", "XGB"]}, {"input": "beta_FM", "name": "xgb_fm", "suffix": "XF", "route": ["beta_FM", "XGB"]}, {"input": "beta_MFM", "name": "xgb_mfm", "suffix": "XM", "route": ["beta_MFM", "XGB"]}, {"input": "beta_CPD", "name": "xgb_cpd", "suffix": "XC", "route": ["beta_CPD", "XGB"]}, {"input": "beta_VSN", "name": "xgb_vsn", "suffix": "XV", "route": ["beta_VSN", "XGB"]}, {"input": "beta_enc", "name": "xgb_enc", "suffix": "XE", "route": ["beta_enc", "XGB"]}, {"input": "beta_sim", "name": "xgb_sim", "suffix": "XS", "route": ["beta_sim", "XGB"]}, {"input": "gamma_cluster", "name": "xgb_cluster", "suffix": "XG", "route": ["gamma_cluster", "XGB"]}], "xgbDecisionRoute": ["XGB", "beta_proba", "Threshold", "y_pred", "Critic_action", "m_gamma", "m", "ScoreBase", "z_H_R", "ScoreOp", "s_H_R", "H"], "liveRoute": ["eta_market", "DataGathering", "alpha_X", "Preprocess_Cog", "gamma_preprocess", "Append_M_preprocess", "M_preprocess", "Read_M_preprocess", "eta_bar_preprocess", "Per_Preprocess", "alpha_prepared", "Norm_Cog", "gamma_norm", "Append_M_norm", "M_norm", "Read_M_norm", "eta_bar_norm", "Per_Norm", "alpha_X_context", "RegimeEncoder", "beta_regime", "Gen_Regime", "eta_regime", "Union_STM", "eta_bar_regime", "STM_append", "M_reg_STM_filled", "STM_read", "eta_bar_STM", "Per_STM", "alpha_STM", "Similarity_R", "gamma_cluster"], "homeoUpdateRoute": ["H", "vartheta_model", "RegimeEncoder", "beta_regime", "Gen_Regime", "eta_regime"], "learnedReadyNodes": ["DatasetCreation", "Preprocess_Cog", "Norm_Cog", "TimeFM", "CPD", "VSN", "Enc_Cog", "Dec_Gen", "Dec_Gen_Sim", "RegimeEncoder", "Gen_Regime", "Clustering_Pi", "Similarity_R", "Gen_Cluster", "Memory_Cog", "CrossAttention", "XGB", "Threshold", "ThresholdClustering", "ThresholdBruteforce"], "defaultReadyThreshold": 36, "homeostasisThreshold": 0.72}</script>
+  <script>
+(() => {
+  const mealyConfig = JSON.parse(document.getElementById("mealy-config").textContent);
+  const tokenLayer = svgEl("g", { id: "mealy-token-layer" });
+  svg.appendChild(tokenLayer);
+
+  const edgeMap = new Map();
+  edgeState.forEach((item) => {
+    edgeMap.set(`${item.edge.source}->${item.edge.target}`, item);
+  });
+
+  const sim = {
+    running: false,
+    observations: 0,
+    readyThreshold: mealyConfig.defaultReadyThreshold,
+    homeostasisThreshold: mealyConfig.homeostasisThreshold,
+    homeostasis: 0.18,
+    forceUpdate: false,
+    updates: 0,
+    tokenId: 0,
+    packets: new Map(),
+    tokens: [],
+    lastFrame: 0,
+    spawnTimer: 0,
+  };
+  const learnedNodes = new Set();
+  let readyPainted = false;
+
+  function segmentsFor(route) {
+    const segments = [];
+    const missing = [];
+    for (let i = 0; i < route.length - 1; i += 1) {
+      const source = route[i];
+      const target = route[i + 1];
+      const item = edgeMap.get(`${source}->${target}`);
+      if (item) segments.push(item);
+      else missing.push(`${source} -> ${target}`);
+    }
+    if (missing.length) {
+      console.warn("Missing Mealy route edges", missing);
+    }
+    return segments;
+  }
+
+  const routes = {
+    dataset: segmentsFor(mealyConfig.datasetRoute),
+    prep: segmentsFor(mealyConfig.learnRoute),
+    live: segmentsFor(mealyConfig.liveRoute),
+    homeo: segmentsFor(mealyConfig.homeoUpdateRoute),
+    similarity_output: segmentsFor(mealyConfig.similarityOutputRoute),
+    xgb_decision: segmentsFor(mealyConfig.xgbDecisionRoute),
+  };
+  mealyConfig.cognitiveRoutes.forEach((routeConfig) => {
+    routes[routeConfig.name] = segmentsFor(routeConfig.route);
+  });
+  mealyConfig.xgbInputRoutes.forEach((routeConfig) => {
+    routes[routeConfig.name] = segmentsFor(routeConfig.route);
+  });
+
+  const cognitiveOutputByRoute = new Map([
+    ["cpd", "beta_CPD"],
+    ["vsn", "beta_VSN"],
+    ["encoder", "beta_enc"],
+    ["timefm", "beta_FM"],
+    ["multitimefm", "beta_MFM"],
+    ["regime_memory", "beta_sim"],
+  ]);
+  const xgbInputByValue = new Map(
+    mealyConfig.xgbInputRoutes.map((routeConfig) => [routeConfig.input, routeConfig])
+  );
+  const xgbInputRouteNames = new Set(
+    mealyConfig.xgbInputRoutes.map((routeConfig) => routeConfig.name)
+  );
+
+  function isReady() {
+    return sim.observations >= sim.readyThreshold;
+  }
+
+  function setReadyLearnedState(active) {
+    if (active === readyPainted) return;
+    readyPainted = active;
+
+    if (active) {
+      mealyConfig.learnedReadyNodes.forEach((name) => {
+        const node = nodeState.get(name);
+        if (!node || learnedNodes.has(name)) return;
+        learnedNodes.add(name);
+        node.group.classList.add("mealy-learned");
+      });
+      return;
+    }
+
+    learnedNodes.forEach((name) => {
+      const node = nodeState.get(name);
+      if (node) node.group.classList.remove("mealy-learned");
+    });
+    learnedNodes.clear();
+  }
+
+  function modeLabel() {
+    if (!isReady()) return "learn";
+    if (sim.homeostasis > sim.homeostasisThreshold || sim.forceUpdate) return "homeo-update";
+    return "live";
+  }
+
+  function updateMealyStatus() {
+    const status = document.getElementById("mealy-status");
+    setReadyLearnedState(isReady());
+    const mode = modeLabel();
+    const parallel = isReady()
+      ? "alpha_X/Y ctx fork -> XGB barrier"
+      : "dataset + alpha_X/Y ctx fork -> XGB barrier";
+    const blocked = Array.from(sim.packets.values()).filter((packet) => {
+      return !packet.xgbDecisionStarted && packet.received.size > 0;
+    }).length;
+    const homeostasis = sim.homeostasis.toFixed(2);
+    const readyText = `${sim.observations}/${sim.readyThreshold}`;
+    const metricValues = {
+      modeMetric: mode,
+      readyMetric: readyText,
+      homeostasisMetric: homeostasis,
+      updatesMetric: sim.updates,
+    };
+    Object.entries(metricValues).forEach(([id, value]) => {
+      const node = document.getElementById(id);
+      if (node) node.textContent = value;
+    });
+    if (status) {
+      status.textContent = `n=${readyText} | ${mode} | ${parallel} | waiting XGB=${blocked} | H=${homeostasis} | updates=${sim.updates}`;
+    }
+  }
+
+  function setRoute(token, routeName) {
+    token.routeName = routeName;
+    token.segments = routes[routeName];
+    token.index = 0;
+    token.progress = 0;
+    token.current = token.segments[0] || null;
+    token.done = !token.current;
+    token.group.setAttribute("class", `mealy-token ${routeName}`);
+  }
+
+  function makeBranchToken(packetId, routeName, suffix) {
+    const token = {
+      id: packetId,
+      done: false,
+      routeName: null,
+      segments: [],
+      index: 0,
+      progress: 0,
+      duration: 880,
+      current: null,
+      group: svgEl("g", { class: "mealy-token" }),
+    };
+    token.group.appendChild(svgEl("circle", { r: 7.5 }));
+    const label = svgEl("text", { x: 11, y: 0 });
+    label.textContent = `${packetId}${suffix}`;
+    token.group.appendChild(label);
+    tokenLayer.appendChild(token.group);
+    setRoute(token, routeName);
+    sim.tokens.push(token);
+  }
+
+  function makeToken() {
+    const packetId = ++sim.tokenId;
+    const shouldRunLive = isReady();
+    sim.observations += 1;
+    sim.packets.set(packetId, {
+      received: new Set(),
+      xgbStarted: false,
+      xgbArrivals: new Set(),
+      expectedXgbInputs: [],
+      xgbDecisionStarted: false,
+      similarityOutputStarted: false,
+    });
+    if (shouldRunLive) {
+      makeBranchToken(packetId, "prep", "P");
+    } else {
+      makeBranchToken(packetId, "dataset", "D");
+      makeBranchToken(packetId, "prep", "P");
+    }
+    updateMealyStatus();
+  }
+
+  function activateEdge(item) {
+    item.path.classList.add("mealy-active");
+    window.setTimeout(() => item.path.classList.remove("mealy-active"), 360);
+  }
+
+  function enterHomeostaticLearning() {
+    sim.observations = 0;
+    setReadyLearnedState(false);
+    updateMealyStatus();
+  }
+
+  function spawnCognitiveBranches(packetId) {
+    mealyConfig.cognitiveRoutes.forEach((routeConfig) => {
+      makeBranchToken(packetId, routeConfig.name, routeConfig.suffix);
+    });
+  }
+
+  function xgbRequiredInputs(packet) {
+    return [
+      "alpha_X_context",
+      "beta_FM",
+      "beta_MFM",
+      "beta_CPD",
+      "beta_VSN",
+      "beta_enc",
+      "beta_sim",
+      "gamma_cluster",
+    ];
+  }
+
+  function tryStartSimilarityAssign(packetId) {
+    const packet = sim.packets.get(packetId);
+    if (!packet || packet.similarityOutputStarted || packet.received.has("gamma_cluster")) return;
+    if (!packet.received.has("cluster_context") || !packet.received.has("similarity_R")) return;
+
+    packet.similarityOutputStarted = true;
+    makeBranchToken(packetId, "similarity_output", "G");
+    updateMealyStatus();
+  }
+
+  function markInputReady(packetId, inputName) {
+    const packet = sim.packets.get(packetId);
+    if (!packet) return;
+    packet.received.add(inputName);
+    tryStartXgbJoin(packetId);
+  }
+
+  function tryStartXgbJoin(packetId) {
+    const packet = sim.packets.get(packetId);
+    if (!packet || packet.xgbStarted) return;
+
+    const requiredInputs = xgbRequiredInputs(packet);
+    if (!requiredInputs.every((inputName) => packet.received.has(inputName))) return;
+
+    packet.xgbStarted = true;
+    packet.expectedXgbInputs = requiredInputs
+      .map((inputName) => xgbInputByValue.get(inputName))
+      .filter(Boolean);
+
+    packet.expectedXgbInputs.forEach((routeConfig) => {
+      makeBranchToken(packetId, routeConfig.name, routeConfig.suffix);
+    });
+    updateMealyStatus();
+  }
+
+  function markXgbArrival(token) {
+    const packet = sim.packets.get(token.id);
+    if (!packet || packet.xgbDecisionStarted) return;
+    packet.xgbArrivals.add(token.routeName);
+    const arrived = packet.expectedXgbInputs.every((routeConfig) => {
+      return packet.xgbArrivals.has(routeConfig.name);
+    });
+    if (!arrived) return;
+
+    packet.xgbDecisionStarted = true;
+    makeBranchToken(token.id, "xgb_decision", "X");
+    updateMealyStatus();
+  }
+
+  function maybeContinueAfterRoute(token) {
+    if (token.routeName === "prep") {
+      markInputReady(token.id, "alpha_X_context");
+      spawnCognitiveBranches(token.id);
+      return false;
+    }
+
+    if (token.routeName === "cluster_pi") {
+      const packet = sim.packets.get(token.id);
+      if (packet) packet.received.add("cluster_context");
+      tryStartSimilarityAssign(token.id);
+      return false;
+    }
+
+    if (token.routeName === "similarity_regime") {
+      const packet = sim.packets.get(token.id);
+      if (packet) packet.received.add("similarity_R");
+      tryStartSimilarityAssign(token.id);
+      return false;
+    }
+
+    if (token.routeName === "similarity_output") {
+      markInputReady(token.id, "gamma_cluster");
+      return false;
+    }
+
+    if (cognitiveOutputByRoute.has(token.routeName)) {
+      markInputReady(token.id, cognitiveOutputByRoute.get(token.routeName));
+      return false;
+    }
+
+    if (xgbInputRouteNames.has(token.routeName)) {
+      markXgbArrival(token);
+      return false;
+    }
+
+    if (
+      token.routeName === "xgb_decision" &&
+      (sim.forceUpdate || sim.homeostasis > sim.homeostasisThreshold)
+    ) {
+      sim.forceUpdate = false;
+      enterHomeostaticLearning();
+      setRoute(token, "homeo");
+      return true;
+    }
+
+    if (token.routeName === "xgb_decision") {
+      sim.packets.delete(token.id);
+      return false;
+    }
+
+    if (token.routeName === "homeo") {
+      sim.updates += 1;
+      sim.homeostasis = Math.max(0.18, sim.homeostasis - 0.46);
+      sim.packets.delete(token.id);
+      updateMealyStatus();
+    }
+
+    return false;
+  }
+
+  function updateToken(token, delta) {
+    if (token.done || !token.current) return;
+    const item = token.current;
+    const length = item.path.getTotalLength();
+    token.progress += delta / token.duration;
+    const point = item.path.getPointAtLength(length * Math.min(token.progress, 1));
+    token.group.setAttribute("transform", `translate(${point.x} ${point.y})`);
+
+    if (token.progress < 1) return;
+    activateEdge(item);
+    token.index += 1;
+    token.progress = 0;
+    token.current = token.segments[token.index] || null;
+
+    if (!token.current && !maybeContinueAfterRoute(token)) {
+      token.done = true;
+    }
+  }
+
+  function driftHomeostasis(delta) {
+    if (!isReady()) {
+      sim.homeostasis = Math.max(0.12, sim.homeostasis - delta * 0.000025);
+      return;
+    }
+    sim.homeostasis = Math.min(0.96, sim.homeostasis + delta * 0.000014);
+  }
+
+  function frame(timestamp) {
+    if (!sim.lastFrame) sim.lastFrame = timestamp;
+    const delta = timestamp - sim.lastFrame;
+    sim.lastFrame = timestamp;
+
+    if (sim.running) {
+      sim.spawnTimer += delta;
+      if (sim.spawnTimer >= 720) {
+        makeToken();
+        sim.spawnTimer = 0;
+      }
+      driftHomeostasis(delta);
+    }
+
+    sim.tokens.forEach((token) => updateToken(token, delta));
+    sim.tokens = sim.tokens.filter((token) => {
+      if (!token.done) return true;
+      token.group.remove();
+      return false;
+    });
+    updateMealyStatus();
+    requestAnimationFrame(frame);
+  }
+
+  function resetTokens() {
+    sim.running = false;
+    sim.observations = 0;
+    sim.homeostasis = 0.18;
+    sim.forceUpdate = false;
+    sim.updates = 0;
+    sim.tokenId = 0;
+    sim.packets.clear();
+    sim.spawnTimer = 0;
+    setReadyLearnedState(false);
+    sim.tokens.forEach((token) => token.group.remove());
+    sim.tokens = [];
+    document.getElementById("mealy-toggle").textContent = "Start tokens";
+    updateMealyStatus();
+  }
+
+  document.getElementById("mealy-toggle").addEventListener("click", () => {
+    sim.running = !sim.running;
+    document.getElementById("mealy-toggle").textContent = sim.running ? "Pause tokens" : "Start tokens";
+  });
+
+  document.getElementById("mealy-step").addEventListener("click", makeToken);
+
+  document.getElementById("mealy-stress").addEventListener("click", () => {
+    sim.homeostasis = Math.min(0.96, sim.homeostasis + 0.34);
+    sim.forceUpdate = true;
+    updateMealyStatus();
+  });
+
+  document.getElementById("mealy-reset").addEventListener("click", resetTokens);
+
+  document.getElementById("mealy-threshold").addEventListener("input", (event) => {
+    sim.readyThreshold = Number(event.target.value);
+    updateRangeProgress(event.target, thresholdOutput);
+    updateMealyStatus();
+  });
+
+  updateMealyStatus();
+  requestAnimationFrame(frame);
+})();
+  </script>
+
+</body>
+</html>
